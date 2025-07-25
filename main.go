@@ -10,7 +10,9 @@ import (
 func main() {
 	mainMenu := CreateModels()
 
-	if _, err := tea.NewProgram(mainMenu).Run(); err != nil {
+	p := tea.NewProgram(mainMenu, tea.WithAltScreen())
+
+	if _, err := p.Run(); err != nil {
 		fmt.Printf("Error running Gocade: %v\n", err)
 		os.Exit(1)
 	}
