@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	mainMenu := CreateMainMenu()
+	mainMenu := CreateModels()
 
 	if _, err := tea.NewProgram(mainMenu).Run(); err != nil {
 		fmt.Printf("Error running Gocade: %v\n", err)

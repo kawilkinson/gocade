@@ -1,176 +1,178 @@
 package main
 
-import (
-	"fmt"
-	"io"
-	"strings"
+// CODE OF MAIN MENU AND GAME MENU FROM BEFORE REFACTOR, COMMENTED OUT BECAUSE NO LONGER USED
 
-	"github.com/charmbracelet/bubbles/list"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
-)
+// import (
+// 	"fmt"
+// 	"io"
+// 	"strings"
 
-var (
-	titleStyle        = lipgloss.NewStyle().MarginLeft(2).Foreground(lipgloss.Color(GopherColor))
-	itemStyle         = lipgloss.NewStyle().PaddingLeft(4)
-	selectedItemStyle = lipgloss.NewStyle().PaddingLeft(2).Foreground(lipgloss.Color(GopherColor))
-	paginationStyle   = list.DefaultStyles().PaginationStyle.PaddingLeft(4)
-	helpStyle         = list.DefaultStyles().HelpStyle.PaddingLeft(4).PaddingBottom(1)
-	quitTextStyle     = lipgloss.NewStyle().Margin(1, 0, 2, 4)
-)
+// 	"github.com/charmbracelet/bubbles/list"
+// 	tea "github.com/charmbracelet/bubbletea"
+// 	"github.com/charmbracelet/lipgloss"
+// )
 
-type menuItem string
+// var (
+// 	titleStyle        = lipgloss.NewStyle().MarginLeft(2).Foreground(lipgloss.Color(GopherColor))
+// 	itemStyle         = lipgloss.NewStyle().PaddingLeft(4)
+// 	selectedItemStyle = lipgloss.NewStyle().PaddingLeft(2).Foreground(lipgloss.Color(GopherColor))
+// 	paginationStyle   = list.DefaultStyles().PaginationStyle.PaddingLeft(4)
+// 	helpStyle         = list.DefaultStyles().HelpStyle.PaddingLeft(4).PaddingBottom(1)
+// 	quitTextStyle     = lipgloss.NewStyle().Margin(1, 0, 2, 4)
+// )
 
-func (i menuItem) FilterValue() string { return "" }
+// type menuItem string
 
-type menuDelegate struct{}
+// func (i menuItem) FilterValue() string { return "" }
 
-func (d menuDelegate) Height() int                             { return 1 }
-func (d menuDelegate) Spacing() int                            { return 0 }
-func (d menuDelegate) Update(_ tea.Msg, _ *list.Model) tea.Cmd { return nil }
-func (d menuDelegate) Render(w io.Writer, m list.Model, index int, listItem list.Item) {
-	i, ok := listItem.(menuItem)
-	if !ok {
-		return
-	}
+// type menuDelegate struct{}
 
-	str := fmt.Sprintf("%d. %s", index+1, i)
+// func (d menuDelegate) Height() int                             { return 1 }
+// func (d menuDelegate) Spacing() int                            { return 0 }
+// func (d menuDelegate) Update(_ tea.Msg, _ *list.Model) tea.Cmd { return nil }
+// func (d menuDelegate) Render(w io.Writer, m list.Model, index int, listItem list.Item) {
+// 	i, ok := listItem.(menuItem)
+// 	if !ok {
+// 		return
+// 	}
 
-	fn := itemStyle.Render
-	if index == m.Index() {
-		fn = func(s ...string) string {
-			return selectedItemStyle.Render("> " + strings.Join(s, " "))
-		}
-	}
+// 	str := fmt.Sprintf("%d. %s", index+1, i)
 
-	fmt.Fprint(w, fn(str))
-}
+// 	fn := itemStyle.Render
+// 	if index == m.Index() {
+// 		fn = func(s ...string) string {
+// 			return selectedItemStyle.Render("> " + strings.Join(s, " "))
+// 		}
+// 	}
 
-type model struct {
-	screen       screen // screen is an int defined in constants.go
-	mainMenu     list.Model
-	gameMenu     list.Model
-	scoreMenu    list.Model
-	list         list.Model
-	choice       string
-	quitting     bool
-	selectedGame string
-}
+// 	fmt.Fprint(w, fn(str))
+// }
 
-func (m model) Init() tea.Cmd {
-	return nil
-}
+// type model struct {
+// 	screen       screen // screen is an int defined in constants.go
+// 	mainMenu     list.Model
+// 	gameMenu     list.Model
+// 	scoreMenu    list.Model
+// 	list         list.Model
+// 	choice       string
+// 	quitting     bool
+// 	selectedGame string
+// }
 
-func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	switch msg := msg.(type) {
+// func (m model) Init() tea.Cmd {
+// 	return nil
+// }
 
-	case tea.KeyMsg:
-		switch keypress := msg.String(); keypress {
+// func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+// 	switch msg := msg.(type) {
 
-		case "q", "ctrl+c":
-			m.quitting = true
-			return m, tea.Quit
+// 	case tea.KeyMsg:
+// 		switch keypress := msg.String(); keypress {
 
-		case "b":
-			if m.screen == ScreenGameMenu {
-				m.screen = ScreenMainMenu
-				return m, nil
-			}
+// 		case "q", "ctrl+c":
+// 			m.quitting = true
+// 			return m, tea.Quit
 
-		case "enter":
-			switch m.screen {
+// 		case "b":
+// 			if m.screen == ScreenGameMenu {
+// 				m.screen = ScreenMainMenu
+// 				return m, nil
+// 			}
 
-			case ScreenMainMenu:
-				choice := m.mainMenu.SelectedItem().(menuItem)
+// 		case "enter":
+// 			switch m.screen {
 
-				switch choice {
+// 			case ScreenMainMenu:
+// 				choice := m.mainMenu.SelectedItem().(menuItem)
 
-				case "Play Game":
-					m.screen = ScreenGameMenu
+// 				switch choice {
 
-				case "High Scores":
-					return m, tea.Quit
+// 				case "Play Game":
+// 					m.screen = ScreenGameMenu
 
-				case "Quit":
-					m.quitting = true
-					return m, tea.Quit
-				}
+// 				case "High Scores":
+// 					return m, tea.Quit
 
-			case ScreenGameMenu:
-				m.selectedGame = string(m.gameMenu.SelectedItem().(menuItem))
-				m.choice = fmt.Sprintf("Launching game: %s\n", m.selectedGame)
-				return m, tea.Quit
+// 				case "Quit":
+// 					m.quitting = true
+// 					return m, tea.Quit
+// 				}
 
-			}
-		}
-	}
+// 			case ScreenGameMenu:
+// 				m.selectedGame = string(m.gameMenu.SelectedItem().(menuItem))
+// 				m.choice = fmt.Sprintf("Launching game: %s\n", m.selectedGame)
+// 				return m, tea.Quit
 
-	var cmd tea.Cmd
-	switch m.screen {
-	case ScreenMainMenu:
-		m.mainMenu, cmd = m.mainMenu.Update(msg)
+// 			}
+// 		}
+// 	}
 
-	case ScreenGameMenu:
-		m.gameMenu, cmd = m.gameMenu.Update(msg)
-	}
-	return m, cmd
-}
+// 	var cmd tea.Cmd
+// 	switch m.screen {
+// 	case ScreenMainMenu:
+// 		m.mainMenu, cmd = m.mainMenu.Update(msg)
 
-func (m model) View() string {
-	if m.quitting {
-		return quitTextStyle.Render("Exiting Gocade...")
-	}
+// 	case ScreenGameMenu:
+// 		m.gameMenu, cmd = m.gameMenu.Update(msg)
+// 	}
+// 	return m, cmd
+// }
 
-	switch m.choice {
-	case "High Scores":
+// func (m model) View() string {
+// 	if m.quitting {
+// 		return quitTextStyle.Render("Exiting Gocade...")
+// 	}
 
-	}
+// 	switch m.choice {
+// 	case "High Scores":
 
-	switch m.screen {
-	case ScreenMainMenu:
-		return "\n" + m.mainMenu.View()
+// 	}
 
-	case ScreenGameMenu:
-		return "\n" + m.gameMenu.View() + "\n\nPress 'b' to go back"
-	}
+// 	switch m.screen {
+// 	case ScreenMainMenu:
+// 		return "\n" + m.mainMenu.View()
 
-	return "\n" + m.list.View()
-}
+// 	case ScreenGameMenu:
+// 		return "\n" + m.gameMenu.View() + "\n\nPress 'b' to go back"
+// 	}
 
-func CreateMainMenu() model {
-	menuItems := []list.Item{
-		menuItem("Play Game"),
-		menuItem("High Scores"),
-		menuItem("Quit"),
-	}
+// 	return "\n" + m.list.View()
+// }
 
-	games := []list.Item{ // these aren't the final games to be included, added these for testing
-		menuItem("Snake"),
-		menuItem("Tetris"),
-		menuItem("Pong"),
-	}
+// func CreateMainMenu() model {
+// 	menuItems := []list.Item{
+// 		menuItem("Play Game"),
+// 		menuItem("High Scores"),
+// 		menuItem("Quit"),
+// 	}
 
-	mainList := list.New(menuItems, menuDelegate{}, MenuWidth, MenuHeight)
-	mainList.Title = "Gocade"
-	mainList.SetShowStatusBar(false)
-	mainList.SetFilteringEnabled(false)
-	mainList.Styles.Title = titleStyle
-	mainList.Styles.PaginationStyle = paginationStyle
-	mainList.Styles.HelpStyle = helpStyle
+// 	games := []list.Item{ // these aren't the final games to be included, added these for testing
+// 		menuItem("Snake"),
+// 		menuItem("Tetris"),
+// 		menuItem("Pong"),
+// 	}
 
-	gameList := list.New(games, menuDelegate{}, MenuWidth, MenuHeight)
-	gameList.Title = "Select a Game"
-	gameList.SetShowStatusBar(false)
-	gameList.SetFilteringEnabled(false)
-	gameList.Styles.Title = titleStyle
-	gameList.Styles.PaginationStyle = paginationStyle
-	gameList.Styles.HelpStyle = helpStyle
+// 	mainList := list.New(menuItems, menuDelegate{}, MenuWidth, MenuHeight)
+// 	mainList.Title = "Gocade"
+// 	mainList.SetShowStatusBar(false)
+// 	mainList.SetFilteringEnabled(false)
+// 	mainList.Styles.Title = titleStyle
+// 	mainList.Styles.PaginationStyle = paginationStyle
+// 	mainList.Styles.HelpStyle = helpStyle
 
-	m := model{
-		screen:   ScreenMainMenu,
-		mainMenu: mainList,
-		gameMenu: gameList,
-	}
+// 	gameList := list.New(games, menuDelegate{}, MenuWidth, MenuHeight)
+// 	gameList.Title = "Select a Game"
+// 	gameList.SetShowStatusBar(false)
+// 	gameList.SetFilteringEnabled(false)
+// 	gameList.Styles.Title = titleStyle
+// 	gameList.Styles.PaginationStyle = paginationStyle
+// 	gameList.Styles.HelpStyle = helpStyle
 
-	return m
-}
+// 	m := model{
+// 		screen:   ScreenMainMenu,
+// 		mainMenu: mainList,
+// 		gameMenu: gameList,
+// 	}
+
+// 	return m
+// }
