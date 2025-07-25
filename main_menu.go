@@ -47,9 +47,14 @@ func (d menuDelegate) Render(w io.Writer, m list.Model, index int, listItem list
 }
 
 type model struct {
-	list     list.Model
-	choice   string
-	quitting bool
+	screen       screen // screen is an int defined in constants.go
+	mainMenu     list.Model
+	gameMenu     list.Model
+	scoreMenu    list.Model
+	list         list.Model
+	choice       string
+	quitting     bool
+	selectedGame string
 }
 
 func (m model) Init() tea.Cmd {
@@ -58,44 +63,75 @@ func (m model) Init() tea.Cmd {
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
-	case tea.WindowSizeMsg:
-		m.list.SetWidth(msg.Width)
-		return m, nil
 
 	case tea.KeyMsg:
 		switch keypress := msg.String(); keypress {
+
 		case "q", "ctrl+c":
 			m.quitting = true
 			return m, tea.Quit
 
-		case "enter":
-			i, ok := m.list.SelectedItem().(menuItem)
-			if ok {
-				m.choice = string(i)
+		case "b":
+			if m.screen == ScreenGameMenu {
+				m.screen = ScreenMainMenu
+				return m, nil
 			}
-			return m, tea.Quit
+
+		case "enter":
+			switch m.screen {
+
+			case ScreenMainMenu:
+				choice := m.mainMenu.SelectedItem().(menuItem)
+
+				switch choice {
+
+				case "Play Game":
+					m.screen = ScreenGameMenu
+
+				case "High Scores":
+					return m, tea.Quit
+
+				case "Quit":
+					m.quitting = true
+					return m, tea.Quit
+				}
+
+			case ScreenGameMenu:
+				m.selectedGame = string(m.gameMenu.SelectedItem().(menuItem))
+				m.choice = fmt.Sprintf("Launching game: %s\n", m.selectedGame)
+				return m, tea.Quit
+
+			}
 		}
 	}
 
 	var cmd tea.Cmd
-	m.list, cmd = m.list.Update(msg)
+	switch m.screen {
+	case ScreenMainMenu:
+		m.mainMenu, cmd = m.mainMenu.Update(msg)
+
+	case ScreenGameMenu:
+		m.gameMenu, cmd = m.gameMenu.Update(msg)
+	}
 	return m, cmd
 }
 
 func (m model) View() string {
-	switch m.choice {
-	case "Quit":
-		return quitTextStyle.Render("Exiting Gocade...")
-
-	case "Play Game":
-		return quitTextStyle.Render("Moving to game selection menu...")
-
-	case "High Scores":
-		return quitTextStyle.Render("Moving to High Scores menu...")
-	}
-
 	if m.quitting {
 		return quitTextStyle.Render("Exiting Gocade...")
+	}
+
+	switch m.choice {
+	case "High Scores":
+
+	}
+
+	switch m.screen {
+	case ScreenMainMenu:
+		return "\n" + m.mainMenu.View()
+
+	case ScreenGameMenu:
+		return "\n" + m.gameMenu.View() + "\n\nPress 'b' to go back"
 	}
 
 	return "\n" + m.list.View()
@@ -108,15 +144,33 @@ func CreateMainMenu() model {
 		menuItem("Quit"),
 	}
 
-	l := list.New(menuItems, menuDelegate{}, MenuWidth, MenuHeight)
-	l.Title = "Gocade"
-	l.SetShowStatusBar(false)
-	l.SetFilteringEnabled(false)
-	l.Styles.Title = titleStyle
-	l.Styles.PaginationStyle = paginationStyle
-	l.Styles.HelpStyle = helpStyle
+	games := []list.Item{ // these aren't the final games to be included, added these for testing
+		menuItem("Snake"),
+		menuItem("Tetris"),
+		menuItem("Pong"),
+	}
 
-	m := model{list: l}
+	mainList := list.New(menuItems, menuDelegate{}, MenuWidth, MenuHeight)
+	mainList.Title = "Gocade"
+	mainList.SetShowStatusBar(false)
+	mainList.SetFilteringEnabled(false)
+	mainList.Styles.Title = titleStyle
+	mainList.Styles.PaginationStyle = paginationStyle
+	mainList.Styles.HelpStyle = helpStyle
+
+	gameList := list.New(games, menuDelegate{}, MenuWidth, MenuHeight)
+	gameList.Title = "Select a Game"
+	gameList.SetShowStatusBar(false)
+	gameList.SetFilteringEnabled(false)
+	gameList.Styles.Title = titleStyle
+	gameList.Styles.PaginationStyle = paginationStyle
+	gameList.Styles.HelpStyle = helpStyle
+
+	m := model{
+		screen:   ScreenMainMenu,
+		mainMenu: mainList,
+		gameMenu: gameList,
+	}
 
 	return m
 }
