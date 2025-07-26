@@ -12,7 +12,7 @@ import (
 	"github.com/kawilkinson/gocade/internal/utils"
 )
 
-type model struct {
+type MainMenuModels struct {
 	Screen        utils.Screen
 	MainMenu      list.Model
 	GameMenu      list.Model
@@ -26,23 +26,24 @@ type model struct {
 	quitting      bool
 }
 
-func CreateModels() *model {
+func CreateModels() *MainMenuModels {
 	progressBar := progress.New(progress.WithGradient("#00ADD8", "#0082A8"), progress.WithWidth(40))
+	keys := utils.AdditionalMainMenuKeys() // only additional since most of the defaults Bubble Tea has are good enough
 
-	return &model{
+	return &MainMenuModels{
 		Screen:     utils.ScreenLoading,
 		MainMenu:   screens.NewMainMenu(utils.MenuWidth, utils.MenuHeight),
-		GameMenu:   screens.NewGameMenu(utils.MenuWidth, utils.MenuHeight),
-		ScoreMenu:  screens.NewScoreMenu(utils.MenuWidth, utils.MenuHeight),
+		GameMenu:   screens.NewGameMenu(utils.MenuWidth, utils.MenuHeight, keys),
+		ScoreMenu:  screens.NewScoreMenu(utils.MenuWidth, utils.MenuHeight, keys),
 		LoadingBar: progressBar,
 	}
 }
 
-func (m *model) Init() tea.Cmd {
+func (m *MainMenuModels) Init() tea.Cmd {
 	return tea.Batch(screens.Tick(), screens.PulseDots())
 }
 
-func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *MainMenuModels) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 
 	case tea.WindowSizeMsg:
@@ -112,6 +113,7 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, tea.Quit
 	}
 
+	// screen updates for the main menus
 	var cmd tea.Cmd
 	switch m.Screen {
 
@@ -136,7 +138,7 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func (m *model) View() string {
+func (m *MainMenuModels) View() string {
 	if m.quitting {
 		dots := strings.Repeat(".", m.pulseDotCount)
 		quitText := screens.QuitTextStyle.Render(fmt.Sprintf("Exiting Gocade%s", dots))

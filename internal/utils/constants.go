@@ -1,7 +1,5 @@
 package utils
 
-import "github.com/charmbracelet/bubbles/key"
-
 type Screen int
 
 const (
@@ -20,6 +18,7 @@ const (
 	// Colors for styling
 	GopherColor = "#00ADD8"
 
+	// Art for arcade machine
 	GopherMascot = `         
 	         ⡀⡠⢠⠰⢐⠔⡘⡐⡑⢌⢒⠰⡐⠤⢠⢀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 	⡀⡄⢄⢄⡠⠢⡡⡑⠌⠔⢌⠢⠨⢂⢊⠄⢅⠢⠑⠐⠑⠔⢡⢑⠢⢔⠔⡂⢆⢄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
@@ -46,10 +45,4 @@ const (
 ⠀⠀⠀⠀⠀⠠⢊⠐⠈⡂⡇⣅⢂⠪⢐⠌⡊⠔⡐⡡⠨⡨⢐⠡⡨⡨⡢⠕⢅⠂⡈⡢⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
      ⠘⢄⢅⠎⠈⠀⠀⠉⠘⠂⠃⠒⠕⠢⠪⠒⠘⠂⠃⠁⠁⠀⠀⠈⠂⠆⠎⠂⠀
 `
-)
-
-// code here creates key bindings for the help menu
-var KeyBindings = key.NewBinding(
-	key.WithKeys("b"),
-	key.WithHelp("b", "back"),
 )

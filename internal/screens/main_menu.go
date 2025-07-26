@@ -16,7 +16,6 @@ func NewMainMenu(width, height int) list.Model {
 	mainMenu := list.New(items, MenuDelegate{}, width, height)
 	mainMenu.Title = "Gocade"
 	mainMenu.SetShowStatusBar(false)
-	mainMenu.SetShowHelp(true)
 	mainMenu.SetFilteringEnabled(false)
 	mainMenu.Styles.Title = titleStyle
 	return mainMenu
