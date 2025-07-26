@@ -10,7 +10,7 @@ type TetrisKeys struct {
 	RotateClockwise        key.Binding
 	RotateCounterClockwise key.Binding
 	Exit                   key.Binding
-	HardExit               key.Binding
+	ForceQuit              key.Binding
 	Hold                   key.Binding
 	Help                   key.Binding
 }
@@ -45,7 +45,7 @@ func SetTetrisKeyBindings() *TetrisKeys {
 		RotateClockwise:        key.NewBinding(key.WithKeys("q"), key.WithHelp("q", "rotate tetrimino clockwise")),
 		RotateCounterClockwise: key.NewBinding(key.WithKeys("e"), key.WithHelp("e", "rotate tetrimino counterclockwise")),
 		Exit:                   key.NewBinding(key.WithKeys("esc"), key.WithHelp("esc", "exit")),
-		HardExit:               key.NewBinding(key.WithKeys("ctrl+c"), key.WithHelp("ctrl+c", "force exit")),
+		ForceQuit:               key.NewBinding(key.WithKeys("ctrl+c"), key.WithHelp("ctrl+c", "force exit")),
 		Hold:                   key.NewBinding(key.WithKeys(" ", "enter"), key.WithHelp("space/enter", "hold a tetrimino")),
 		Help:                   key.NewBinding(key.WithKeys("?"), key.WithHelp("?", "help")),
 	}

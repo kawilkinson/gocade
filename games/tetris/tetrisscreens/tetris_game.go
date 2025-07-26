@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"math/rand/v2"
 	"strconv"
+	"time"
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/stopwatch"
+	"github.com/charmbracelet/bubbles/timer"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/kawilkinson/gocade/games/tetris/tetrisconfig"
@@ -18,6 +20,27 @@ import (
 	"github.com/kawilkinson/gocade/internal/utils"
 )
 
+const (
+	pausedMessage = `
+	____                            __
+   / __ \____ ___  __________  ____/ /
+  / /_/ / __ ^/ / / / ___/ _ \/ __  /
+ / ____/ /_/ / /_/ (__  )  __/ /_/ /
+/_/    \__,_/\__,_/____/\___/\__,_/
+Press PAUSE to continue or HOLD to exit.
+`
+	gameOverMessage = `
+   ______                        ____                 
+  / ____/___ _____ ___  ___     / __ \_   _____  _____
+ / / __/ __ ^/ __ ^__ \/ _ \   / / / / | / / _ \/ ___/
+/ /_/ / /_/ / / / / / /  __/  / /_/ /| |/ /  __/ /
+\____/\__,_/_/ /_/ /_/\___/   \____/ |___/\___/_/
+
+			Press EXIT or HOLD to continue.
+`
+	timerUpdateInterval = time.Millisecond * 13
+)
+
 var _ tea.Model = &SingleModel{}
 
 type SingleModel struct {
@@ -25,11 +48,12 @@ type SingleModel struct {
 	game            *single.Game
 	nextQueueLength int
 	fallStopwatch   tetrisconfig.Stopwatch
-	screen          tutils.Screen
+	mode            tetrisconfig.Mode
 
+	gameTimer     tetrisconfig.Timer
 	gameStopwatch tetrisconfig.Stopwatch
 
-	styles   tetrisconfig.GameStyles
+	styles   *tetrisconfig.GameStyles
 	help     help.Model
 	keys     *tetrisconfig.TetrisKeys
 	isPaused bool
@@ -39,64 +63,95 @@ type SingleModel struct {
 	height int
 }
 
-func NewSingleModel(input *SingleInput, cfg *tetrisconfig.Config, opts ...func(*SingleModel)) (*SingleModel, error) {
+func NewSingleModel(
+	in *tetrisconfig.SingleInput,
+	cfg *tetrisconfig.Config,
+	opts ...func(*SingleModel),
+) (*SingleModel, error) {
+	// Setup initial model
 	m := &SingleModel{
-		username:        input.Username,
-		styles:          *tetrisconfig.CreateGameStyles(cfg.Theme),
+		username:        in.Username,
+		styles:          tetrisconfig.CreateGameStyles(cfg.Theme),
 		help:            help.New(),
 		keys:            tetrisconfig.SetTetrisKeyBindings(),
 		isPaused:        false,
 		nextQueueLength: cfg.NextQueueLength,
-		screen:          input.Screen,
-		rand:            rand.New(rand.NewPCG(rand.Uint64(), rand.Uint64())),
+		mode:            in.Mode,
+		//nolint:gosec // This random source is not for any security-related tasks.
+		rand: rand.New(rand.NewPCG(rand.Uint64(), rand.Uint64())),
 	}
 
 	for _, opt := range opts {
 		opt(m)
 	}
 
-	var gameInput *single.Input
-	switch input.Screen {
-	case tutils.ScreenTetrisGame:
-		gameInput = &single.Input{
-			Level:         1,
-			MaxLevel:      15,
+	// Get game input
+	var gameIn *single.Input
+	switch in.Mode {
+	case tetrisconfig.ModeMarathon:
+		gameIn = &single.Input{
+			Level:         in.Level,
+			MaxLevel:      cfg.MaxLevel,
 			IncreaseLevel: true,
 			EndOnMaxLevel: cfg.EndOnMaxLevel,
 
-			MaxLines:      40,
-			EndOnMaxLines: false,
-
-			GhostEnabled: false,
+			GhostEnabled: cfg.GhostEnabled,
 		}
-		m.gameStopwatch = tetrisconfig.NewStopwatchWithInterval(tutils.TimerUpdateInterval)
+		m.gameStopwatch = tetrisconfig.NewStopwatchWithInterval(timerUpdateInterval)
 
-	case tutils.ScreenTetrisMenu:
+	case tetrisconfig.ModeSprint:
+		gameIn = &single.Input{
+			Level:         in.Level,
+			MaxLevel:      cfg.MaxLevel,
+			IncreaseLevel: true,
+
+			MaxLines:      40,
+			EndOnMaxLines: true,
+
+			GhostEnabled: cfg.GhostEnabled,
+		}
+		m.gameStopwatch = tetrisconfig.NewStopwatchWithInterval(timerUpdateInterval)
+
+	case tetrisconfig.ModeUltra:
+		gameIn = &single.Input{
+			Level:        in.Level,
+			GhostEnabled: cfg.GhostEnabled,
+		}
+		m.gameTimer = tetrisconfig.NewTimerWithInterval(time.Minute*2, timerUpdateInterval)
+
+	case tetrisconfig.ModeMenu, tetrisconfig.ModeLeaderboard:
 		fallthrough
-
 	default:
-		return nil, fmt.Errorf("invalid single player game mode %v", input.Screen)
+		return nil, fmt.Errorf("invalid single player game mode: %v", in.Mode)
 	}
+	gameIn.Rand = m.rand
 
+	// Create game
 	var err error
-	m.game, err = single.NewGame(gameInput)
+	m.game, err = single.NewGame(gameIn)
 	if err != nil {
-		return nil, fmt.Errorf("unable to create single player game: %v", err)
+		return nil, fmt.Errorf("creating single player game: %w", err)
 	}
 
+	// Setup game dependents
 	m.fallStopwatch = tetrisconfig.NewStopwatchWithInterval(m.game.GetDefaultFallInterval())
 
 	return m, nil
 }
 
-func RandSource(r *rand.Rand) func(*SingleModel) {
+func WithRandSource(r *rand.Rand) func(*SingleModel) {
 	return func(m *SingleModel) {
 		m.rand = r
 	}
 }
 
 func (m *SingleModel) Init() tea.Cmd {
-	cmd := m.gameStopwatch.Init()
+	var cmd tea.Cmd
+	if m.gameTimer != nil {
+		cmd = m.gameTimer.Init()
+	} else {
+		cmd = m.gameStopwatch.Init()
+	}
 
 	return tea.Batch(m.fallStopwatch.Init(), cmd)
 }
@@ -105,15 +160,19 @@ func (m *SingleModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 	var cmds []tea.Cmd
 
+	// Dependencies
 	m, cmd = m.dependenciesUpdate(msg)
 	cmds = append(cmds, cmd)
 
+	// Operations that can be performed all the time
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, m.keys.Help):
 			m.help.ShowAll = !m.help.ShowAll
 			return m, tea.Batch(cmds...)
+		case key.Matches(msg, m.keys.ForceQuit):
+			return m, tea.Quit
 		}
 
 	case tea.WindowSizeMsg:
@@ -122,18 +181,21 @@ func (m *SingleModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, tea.Batch(cmds...)
 	}
 
+	// Game Over
 	if m.game.IsGameOver() {
 		m, cmd = m.gameOverUpdate(msg)
 		cmds = append(cmds, cmd)
 		return m, tea.Batch(cmds...)
 	}
 
+	// Paused
 	if m.isPaused {
 		m, cmd = m.pausedUpdate(msg)
 		cmds = append(cmds, cmd)
 		return m, tea.Batch(cmds...)
 	}
 
+	// Playing
 	m, cmd = m.playingUpdate(msg)
 	cmds = append(cmds, cmd)
 	return m, tea.Batch(cmds...)
@@ -144,9 +206,16 @@ func (m *SingleModel) dependenciesUpdate(msg tea.Msg) (*SingleModel, tea.Cmd) {
 	var cmds []tea.Cmd
 	var err error
 
-	cmd, err = utils.UpdateTypedModel(&m.gameStopwatch, msg)
-	if err != nil {
-		cmds = append(cmds, tutils.ErrorCmd(err))
+	if m.gameTimer != nil {
+		cmd, err = utils.UpdateTypedModel(&m.gameTimer, msg)
+		if err != nil {
+			cmds = append(cmds, tutils.ErrorCmd(err))
+		}
+	} else {
+		cmd, err = utils.UpdateTypedModel(&m.gameStopwatch, msg)
+		if err != nil {
+			cmds = append(cmds, tutils.ErrorCmd(err))
+		}
 	}
 	cmds = append(cmds, cmd)
 
@@ -160,23 +229,20 @@ func (m *SingleModel) dependenciesUpdate(msg tea.Msg) (*SingleModel, tea.Cmd) {
 }
 
 func (m *SingleModel) gameOverUpdate(msg tea.Msg) (*SingleModel, tea.Cmd) {
-	var cmds []tea.Cmd
 	if msg, ok := msg.(tea.KeyMsg); ok {
 		if key.Matches(msg, m.keys.Exit, m.keys.Hold) {
+			modeStr := m.mode.String()
 			newEntry := tetrisdata.Score{
 				Name:  m.username,
 				Score: m.game.GetTotalScore(),
 				Lines: m.game.GetLinesCleared(),
 				Level: m.game.GetLevel(),
+				Mode:  modeStr,
 			}
 
-			err := tetrisdata.SaveScore(newEntry)
-			if err != nil {
-				cmds = append(cmds, tutils.ErrorCmd(err))
-			}
+			_ = tetrisdata.SaveScore(newEntry)
 
-			cmds = append(cmds, ChangeScreen(tutils.ScreenTetrisMenu, NewMenuInput()))
-			return m, tea.Batch(cmds...)
+			return m, tetrisconfig.SwitchModeCmd(tetrisconfig.ModeMenu, tetrisconfig.NewMenuInput())
 		}
 	}
 
@@ -188,9 +254,8 @@ func (m *SingleModel) pausedUpdate(msg tea.Msg) (*SingleModel, tea.Cmd) {
 		switch {
 		case key.Matches(msg, m.keys.Exit):
 			return m, m.togglePause()
-
 		case key.Matches(msg, m.keys.Hold):
-			return m, ChangeScreen(tutils.ScreenTetrisMenu, NewMenuInput())
+			return m, tetrisconfig.SwitchModeCmd(tetrisconfig.ModeMenu, tetrisconfig.NewMenuInput())
 		}
 	}
 
@@ -206,8 +271,13 @@ func (m *SingleModel) playingUpdate(msg tea.Msg) (*SingleModel, tea.Cmd) {
 		if msg.ID != m.fallStopwatch.ID() {
 			break
 		}
-
 		return m, m.fallStopwatchTick()
+
+	case timer.TimeoutMsg:
+		if msg.ID != m.gameTimer.ID() {
+			break
+		}
+		return m, m.triggerGameOver()
 	}
 
 	return m, nil
@@ -226,108 +296,94 @@ func (m *SingleModel) playingKeyMsgUpdate(msg tea.KeyMsg) (*SingleModel, tea.Cmd
 	case key.Matches(msg, m.keys.RotateClockwise):
 		err := m.game.Rotate(true)
 		if err != nil {
-			return nil, tutils.ErrorCmd(fmt.Errorf("unable to rotate clockwise: %v", err))
+			return nil, tutils.ErrorCmd(fmt.Errorf("rotating clockwise: %w", err))
 		}
-
 		return m, nil
 
 	case key.Matches(msg, m.keys.RotateCounterClockwise):
 		err := m.game.Rotate(false)
 		if err != nil {
-			return nil, tutils.ErrorCmd(fmt.Errorf("unable to rotate counterclockwise: %v", err))
+			return nil, tutils.ErrorCmd(fmt.Errorf("rotating counter-clockwise: %w", err))
 		}
-
 		return m, nil
 
 	case key.Matches(msg, m.keys.HardDrop):
 		gameOver, err := m.game.HardDrop()
 		if err != nil {
-			return nil, tutils.ErrorCmd(fmt.Errorf("unable to hard drop: %v", err))
+			return nil, tutils.ErrorCmd(fmt.Errorf("hard dropping: %w", err))
 		}
-
 		var cmds []tea.Cmd
 		if gameOver {
 			cmds = append(cmds, m.triggerGameOver())
 		}
-
 		cmds = append(cmds, m.fallStopwatch.Reset())
-
 		return m, tea.Batch(cmds...)
 
 	case key.Matches(msg, m.keys.SoftDrop):
 		m.game.ToggleSoftDrop()
-
 		return m, m.fallStopwatchTick()
 
 	case key.Matches(msg, m.keys.Hold):
 		gameOver, err := m.game.Hold()
 		if err != nil {
-			return nil, tutils.ErrorCmd(fmt.Errorf("unable to hold tetrimino: %v", err))
+			return nil, tutils.ErrorCmd(fmt.Errorf("holding tetrimino: %w", err))
 		}
-
 		var cmds []tea.Cmd
 		if gameOver {
 			cmds = append(cmds, m.triggerGameOver())
 		}
-
 		return m, tea.Batch(cmds...)
 
 	case key.Matches(msg, m.keys.Exit):
 		return m, m.togglePause()
 	}
-
 	return m, nil
 }
 
 func (m *SingleModel) fallStopwatchTick() tea.Cmd {
 	gameOver, err := m.game.TickLower()
 	if err != nil {
-		return tutils.ErrorCmd(fmt.Errorf("unable to lower tetrimino (tick): %v", err))
+		return tutils.ErrorCmd(fmt.Errorf("lowering tetrimino (tick): %w", err))
 	}
-
 	if gameOver {
 		return m.triggerGameOver()
 	}
-
 	m.fallStopwatch.SetInterval(m.game.GetFallInterval())
-
 	return nil
 }
 
 func (m *SingleModel) View() string {
 	matrixView, err := m.matrixView()
 	if err != nil {
-		return "** UNABLE TO BUILD MATRIX VIEW **"
+		return "** FAILED TO BUILD MATRIX VIEW **"
 	}
 
-	var output = lipgloss.JoinHorizontal(
-		lipgloss.Top,
+	var output = lipgloss.JoinHorizontal(lipgloss.Top,
 		lipgloss.JoinVertical(lipgloss.Right, m.holdView(), m.informationView()),
 		matrixView,
 		m.bagView(),
 	)
 
 	if m.game.IsGameOver() {
-		output, err = utils.OverlayCenter(output, tutils.GameOverMessage, true)
+		output, err = utils.OverlayCenter(output, gameOverMessage, true)
 		if err != nil {
 			return "** FAILED TO OVERLAY GAME OVER MESSAGE **"
 		}
 	} else if m.isPaused {
-		output, err = utils.OverlayCenter(output, tutils.PausedMessage, true)
+		output, err = utils.OverlayCenter(output, pausedMessage, true)
 		if err != nil {
 			return "** FAILED TO OVERLAY PAUSED MESSAGE **"
 		}
 	}
 
 	output = lipgloss.JoinVertical(lipgloss.Left, output, m.help.View(m.keys))
-
 	return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, output)
 }
 
 func (m *SingleModel) matrixView() (string, error) {
 	matrix, err := m.game.GetVisibleMatrix()
 	if err != nil {
-		return "", fmt.Errorf("unable to get visible matrix: %v", err)
+		return "", fmt.Errorf("getting visible matrix: %w", err)
 	}
 
 	var output string
@@ -335,7 +391,6 @@ func (m *SingleModel) matrixView() (string, error) {
 		for col := range matrix[row] {
 			output += m.renderCell(matrix[row][col])
 		}
-
 		if row < len(matrix)-1 {
 			output += "\n"
 		}
@@ -345,9 +400,7 @@ func (m *SingleModel) matrixView() (string, error) {
 	for i := 1; i <= 20; i++ {
 		rowIndicator += fmt.Sprintf("%d\n", i)
 	}
-
-	return lipgloss.JoinHorizontal(
-		lipgloss.Center,
+	return lipgloss.JoinHorizontal(lipgloss.Center,
 		m.styles.Playfield.Render(output),
 		m.styles.RowIndicator.Render(rowIndicator),
 	), nil
@@ -357,28 +410,27 @@ func (m *SingleModel) informationView() string {
 	width := m.styles.Information.GetWidth()
 
 	var header string
-	headerStyle := lipgloss.NewStyle().
-		Width(width).
-		AlignHorizontal(lipgloss.Center).
-		Bold(true).
-		Underline(true)
+	headerStyle := lipgloss.NewStyle().Width(width).AlignHorizontal(lipgloss.Center).Bold(true).Underline(true)
 
 	switch {
 	case m.game.IsGameOver():
 		header = headerStyle.Render("GAME OVER")
-
 	case m.isPaused:
 		header = headerStyle.Render("PAUSED")
-
 	default:
-		header = headerStyle.Render("Standard")
+		header = headerStyle.Render("MARATHON")
 	}
 
 	toFixedWidth := func(title, value string) string {
 		return fmt.Sprintf("%s%*s\n", title, width-(1+len(title)), value)
 	}
 
-	gameTime := m.gameStopwatch.Elapsed().Seconds()
+	var gameTime float64
+	if m.gameTimer != nil {
+		gameTime = m.gameTimer.GetTimeout().Seconds()
+	} else {
+		gameTime = m.gameStopwatch.Elapsed().Seconds()
+	}
 
 	minutes := int(gameTime) / 60
 
@@ -405,20 +457,17 @@ func (m *SingleModel) holdView() string {
 	label := m.styles.Hold.Label.Render("Hold:")
 	item := m.styles.Hold.Item.Render(m.renderTetrimino(m.game.GetHoldTetrimino(), 1))
 	output := lipgloss.JoinVertical(lipgloss.Top, label, item)
-
 	return m.styles.Hold.View.Render(output)
 }
 
 func (m *SingleModel) bagView() string {
 	output := "Next:\n"
 	for i, t := range m.game.GetBagTetriminos() {
-		for i >= m.nextQueueLength {
+		if i >= m.nextQueueLength {
 			break
 		}
-
 		output += "\n" + m.renderTetrimino(&t, 1)
 	}
-
 	return m.styles.Bag.Render(output)
 }
 
@@ -432,10 +481,8 @@ func (m *SingleModel) renderTetrimino(t *tetrislogic.Tetrimino, background byte)
 				output += m.renderCell(background)
 			}
 		}
-
 		output += "\n"
 	}
-
 	return output
 }
 
@@ -443,20 +490,16 @@ func (m *SingleModel) renderCell(cell byte) string {
 	switch cell {
 	case 0:
 		return m.styles.EmptyCell.Render(m.styles.CellChar.Empty)
-
 	case 1:
 		return "  "
-
 	case 'G':
 		return m.styles.GhostCell.Render(m.styles.CellChar.Ghost)
-
 	default:
 		cellStyle, ok := m.styles.TetriminoCellStyles[cell]
 		if ok {
 			return cellStyle.Render(m.styles.CellChar.Tetriminos)
 		}
 	}
-
 	return "??"
 }
 
@@ -465,7 +508,12 @@ func (m *SingleModel) triggerGameOver() tea.Cmd {
 	m.isPaused = false
 
 	var cmds []tea.Cmd
-	cmds = append(cmds, m.fallStopwatch.Stop())
+	if m.gameTimer != nil {
+		m.gameTimer.SetTimeout(0)
+		cmds = append(cmds, m.gameTimer.Stop())
+	} else {
+		cmds = append(cmds, m.fallStopwatch.Stop())
+	}
 
 	return tea.Batch(cmds...)
 }
@@ -473,7 +521,15 @@ func (m *SingleModel) triggerGameOver() tea.Cmd {
 func (m *SingleModel) togglePause() tea.Cmd {
 	m.isPaused = !m.isPaused
 
-	cmd := m.gameStopwatch.Toggle()
+	var cmd tea.Cmd
+	if m.gameTimer != nil {
+		cmd = m.gameTimer.Toggle()
+	} else {
+		cmd = m.gameStopwatch.Toggle()
+	}
 
-	return tea.Batch(m.fallStopwatch.Stop(), cmd)
+	return tea.Batch(
+		m.fallStopwatch.Toggle(),
+		cmd,
+	)
 }

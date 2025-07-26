@@ -12,6 +12,7 @@ type Score struct {
 	Score int
 	Lines int
 	Level int
+	Mode  string
 }
 
 const scoreFile = "../../internal/leaderboards/tetris_scores.csv"
@@ -32,6 +33,7 @@ func SaveScore(s Score) error {
 		strconv.Itoa(s.Score),
 		strconv.Itoa(s.Lines),
 		strconv.Itoa(s.Level),
+		s.Mode,
 	}
 
 	return writer.Write(record)
@@ -90,6 +92,7 @@ func LoadScores() ([]Score, error) {
 			Score: score,
 			Lines: lines,
 			Level: level,
+			Mode:  rec[5],
 		})
 	}
 

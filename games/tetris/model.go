@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"reflect"
 
+	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/kawilkinson/gocade/games/tetris/tetrisconfig"
 	"github.com/kawilkinson/gocade/games/tetris/tetrisscreens"
@@ -13,14 +14,14 @@ import (
 )
 
 type Input struct {
-	mode     tutils.Screen
-	switchIn tetrisscreens.ChangeScreenInput
+	mode     tetrisconfig.Mode
+	switchIn tetrisconfig.SwitchModeInput
 	cfg      *tetrisconfig.Config
 }
 
-func NewInput(screen tutils.Screen, switchIn tetrisscreens.ChangeScreenInput, cfg *tetrisconfig.Config) *Input {
+func NewInput(mode tetrisconfig.Mode, switchIn tetrisconfig.SwitchModeInput, cfg *tetrisconfig.Config) *Input {
 	return &Input{
-		mode:     screen,
+		mode:     mode,
 		switchIn: switchIn,
 		cfg:      cfg,
 	}
@@ -29,8 +30,9 @@ func NewInput(screen tutils.Screen, switchIn tetrisscreens.ChangeScreenInput, cf
 var _ tea.Model = &Model{}
 
 type Model struct {
-	child tea.Model
-	cfg   *tetrisconfig.Config
+	child        tea.Model
+	cfg          *tetrisconfig.Config
+	forceQuitKey key.Binding
 
 	width  int
 	height int
@@ -40,14 +42,14 @@ type Model struct {
 
 func NewModel(in *Input) (*Model, error) {
 	m := &Model{
-		cfg: in.cfg,
+		cfg:          in.cfg,
+		forceQuitKey: key.NewBinding(key.WithKeys("ctrl+c")),
 	}
 
 	err := m.setChild(in.mode, in.switchIn)
 	if err != nil {
 		return nil, fmt.Errorf("setting child model: %w", err)
 	}
-
 	return m, nil
 }
 
@@ -61,13 +63,17 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.ExitError = msg
 		return m, tea.Quit
 
-	case tetrisscreens.ChangeScreenMsg:
+	case tea.KeyMsg:
+		if key.Matches(msg, m.forceQuitKey) {
+			return m, tea.Quit
+		}
+
+	case tetrisconfig.SwitchModeMsg:
 		err := m.setChild(msg.Target, msg.Input)
 		if err != nil {
 			return m, tutils.ErrorCmd(fmt.Errorf("setting child model: %w", err))
 		}
 		cmd := m.initChild()
-
 		return m, cmd
 
 	case tea.WindowSizeMsg:
@@ -77,7 +83,6 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	var cmd tea.Cmd
 	m.child, cmd = m.child.Update(msg)
-
 	return m, cmd
 }
 
@@ -85,34 +90,33 @@ func (m *Model) View() string {
 	return m.child.View()
 }
 
-func (m *Model) setChild(screen tutils.Screen, changeInput tetrisscreens.ChangeScreenInput) error {
-	if rv := reflect.ValueOf(changeInput); !rv.IsValid() || rv.IsNil() {
-		return errors.New("switchInput is not valid")
+func (m *Model) setChild(mode tetrisconfig.Mode, switchIn tetrisconfig.SwitchModeInput) error {
+	if rv := reflect.ValueOf(switchIn); !rv.IsValid() || rv.IsNil() {
+		return errors.New("switchIn is not valid")
 	}
 
-	switch screen {
-	case tutils.ScreenTetrisMenu:
-		menuInput, ok := changeInput.(*tetrisscreens.TetrisMenuInput)
+	switch mode {
+	case tetrisconfig.ModeMenu:
+		menuIn, ok := switchIn.(*tetrisconfig.MenuInput)
 		if !ok {
-			return fmt.Errorf("switchInput is not a TetrisMenuInput: %v", utils.ErrInvalidTypeAssertion)
+			return fmt.Errorf("switchIn is not a MenuInput: %w", utils.ErrInvalidTypeAssertion)
 		}
-		m.child = tetrisscreens.CreateTetrisMenuModel(menuInput)
+		m.child = tetrisscreens.NewMenuModel(menuIn)
 
-	case tutils.ScreenTetrisGame:
-		singleInput, ok := changeInput.(*tetrisscreens.SingleInput)
+	case tetrisconfig.ModeMarathon, tetrisconfig.ModeSprint, tetrisconfig.ModeUltra:
+		singleIn, ok := switchIn.(*tetrisconfig.SingleInput)
 		if !ok {
-			return fmt.Errorf("switchInput is not a SingleInput: %v", utils.ErrInvalidTypeAssertion)
+			return fmt.Errorf("switchIn is not a SingleInput: %w", utils.ErrInvalidTypeAssertion)
 		}
-		child, err := tetrisscreens.NewSingleModel(singleInput, m.cfg)
+		child, err := tetrisscreens.NewSingleModel(singleIn, m.cfg)
 		if err != nil {
-			return fmt.Errorf("error when creating single model: %w", err)
+			return fmt.Errorf("creating single model: %w", err)
 		}
 		m.child = child
 
 	default:
-		return errors.New("invalid screen")
+		return errors.New("invalid Mode")
 	}
-	
 	return nil
 }
 
