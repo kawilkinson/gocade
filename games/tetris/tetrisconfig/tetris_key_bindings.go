@@ -4,7 +4,7 @@ import "github.com/charmbracelet/bubbles/key"
 
 type TetrisKeys struct {
 	HardDrop               key.Binding
-	ToggleSoftDrop         key.Binding
+	SoftDrop               key.Binding
 	Left                   key.Binding
 	Right                  key.Binding
 	RotateClockwise        key.Binding
@@ -12,12 +12,13 @@ type TetrisKeys struct {
 	Exit                   key.Binding
 	HardExit               key.Binding
 	Hold                   key.Binding
+	Help                   key.Binding
 }
 
 func (k TetrisKeys) ShortHelp() []key.Binding {
 	return []key.Binding{
 		k.HardDrop,
-		k.ToggleSoftDrop,
+		k.SoftDrop,
 		k.Left,
 		k.Right,
 		k.RotateClockwise,
@@ -29,7 +30,7 @@ func (k TetrisKeys) ShortHelp() []key.Binding {
 
 func (k TetrisKeys) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{k.HardDrop, k.ToggleSoftDrop, k.Left, k.Right},
+		{k.HardDrop, k.SoftDrop, k.Left, k.Right},
 		{k.RotateClockwise, k.RotateCounterClockwise},
 		{k.Exit, k.Hold},
 	}
@@ -38,7 +39,7 @@ func (k TetrisKeys) FullHelp() [][]key.Binding {
 func SetTetrisKeyBindings() *TetrisKeys {
 	keys := &TetrisKeys{
 		HardDrop:               key.NewBinding(key.WithKeys("w"), key.WithHelp("w", "hard drop")),
-		ToggleSoftDrop:         key.NewBinding(key.WithKeys("s"), key.WithHelp("s", "toggle soft drop")),
+		SoftDrop:               key.NewBinding(key.WithKeys("s"), key.WithHelp("s", "toggle soft drop")),
 		Left:                   key.NewBinding(key.WithKeys("a"), key.WithHelp("a", "move left")),
 		Right:                  key.NewBinding(key.WithKeys("d"), key.WithHelp("d", "move right")),
 		RotateClockwise:        key.NewBinding(key.WithKeys("q"), key.WithHelp("q", "rotate tetrimino clockwise")),
@@ -46,6 +47,7 @@ func SetTetrisKeyBindings() *TetrisKeys {
 		Exit:                   key.NewBinding(key.WithKeys("esc"), key.WithHelp("esc", "exit")),
 		HardExit:               key.NewBinding(key.WithKeys("ctrl+c"), key.WithHelp("ctrl+c", "force exit")),
 		Hold:                   key.NewBinding(key.WithKeys(" ", "enter"), key.WithHelp("space/enter", "hold a tetrimino")),
+		Help:                   key.NewBinding(key.WithKeys("?"), key.WithHelp("?", "help")),
 	}
 
 	return keys

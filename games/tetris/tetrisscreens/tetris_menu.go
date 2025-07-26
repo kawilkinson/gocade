@@ -9,7 +9,6 @@ import (
 	"github.com/charmbracelet/huh"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/kawilkinson/gocade/games/tetris/tutils"
-	"github.com/kawilkinson/gocade/internal/screens"
 )
 
 type TetrisMenuModel struct {
@@ -32,6 +31,8 @@ func NewMenuInput() *TetrisMenuInput {
 	return &TetrisMenuInput{}
 }
 
+func (input *TetrisMenuInput) isChangeScreenInput() {}
+
 type ChangeScreenMsg struct {
 	Target tutils.Screen
 	Input  ChangeScreenInput
@@ -43,11 +44,13 @@ type ChangeScreenInput interface {
 
 type SingleInput struct {
 	Username string
+	Screen   tutils.Screen
 }
 
-func NewSingleInput(username string) *SingleInput {
+func NewSingleInput(username string, screen tutils.Screen) *SingleInput {
 	return &SingleInput{
 		Username: username,
+		Screen: screen,
 	}
 }
 
@@ -101,7 +104,7 @@ func (m *TetrisMenuModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.width = msg.Width
 		m.height = msg.Height
 		formWidth := msg.Width / 2
-		formWidth = min(formWidth, lipgloss.Width(RenderTetrisTitle()))
+		formWidth = min(formWidth, lipgloss.Width(tutils.RenderLargeText(tutils.TetrisTitle)))
 		m.form = m.form.WithWidth(formWidth)
 		return m, nil
 
@@ -130,7 +133,7 @@ func (m *TetrisMenuModel) performCompletion() tea.Cmd {
 
 	switch m.formData.TetrisGame {
 	case tutils.ScreenTetrisGame:
-		input := NewSingleInput(m.formData.Username)
+		input := NewSingleInput(m.formData.Username, m.formData.TetrisGame)
 		return ChangeScreen(m.formData.TetrisGame, input)
 
 	case tutils.ScreenTetrisMenu:
@@ -144,15 +147,9 @@ func (m *TetrisMenuModel) performCompletion() tea.Cmd {
 func (m *TetrisMenuModel) View() string {
 	content := lipgloss.JoinVertical(
 		lipgloss.Center,
-		RenderTetrisTitle()+"\n",
+		tutils.RenderLargeText(tutils.TetrisTitle)+"\n",
 		m.form.View(),
 	)
 
 	return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, content)
-}
-
-// helper function to ensure Tetris title always shows correctly in Tetris menu
-func RenderTetrisTitle() string {
-	normalizedTitle := screens.NormalizeWidth(tutils.TetrisTitle)
-	return normalizedTitle
 }

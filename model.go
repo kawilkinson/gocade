@@ -8,6 +8,8 @@ import (
 	"github.com/charmbracelet/bubbles/progress"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/kawilkinson/gocade/games/tetris"
+	"github.com/kawilkinson/gocade/games/tetris/tetrisconfig"
 	"github.com/kawilkinson/gocade/games/tetris/tetrisscreens"
 	"github.com/kawilkinson/gocade/games/tetris/tutils"
 	"github.com/kawilkinson/gocade/internal/screens"
@@ -21,6 +23,7 @@ type MainMenuModels struct {
 	GameMenu      list.Model
 	ScoreMenu     list.Model
 	TetrisMenu    *tetrisscreens.TetrisMenuModel
+	Tetris        tea.Model
 	LoadingBar    progress.Model
 	loadingValue  float64
 	pulseDotCount int
@@ -69,8 +72,9 @@ func (m *MainMenuModels) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.Screen = utils.ScreenMainMenu
 				return m, nil
 
-			case utils.Screen(tutils.ScreenTetrisMenu):
+			case utils.Screen(tutils.ScreenTetrisRoot):
 				m.Screen = utils.ScreenGameMenu
+				m.Tetris = nil
 				return m, tea.ClearScreen
 			}
 			if m.Screen == utils.ScreenGameMenu || m.Screen == utils.ScreenScoreMenu {
@@ -104,8 +108,17 @@ func (m *MainMenuModels) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				switch m.SelectedGame {
 
 				case "Tetris":
-					m.Screen = utils.Screen(tutils.ScreenTetrisMenu)
-					return m, tea.Sequence(tea.ClearScreen, m.TetrisMenu.Init())
+					input := tetris.NewInput(tutils.ScreenTetrisMenu, tetrisscreens.NewMenuInput(), tetrisconfig.CreateConfig())
+
+					tetrisModel, err := tetris.NewModel(input)
+					if err != nil {
+						return m, tutils.ErrorCmd(fmt.Errorf("unable to start tetris: %v", err))
+					}
+
+					m.Tetris = tetrisModel
+					m.Screen = utils.Screen(tutils.ScreenTetrisRoot)
+
+					return m, tea.Sequence(tea.ClearScreen, m.Tetris.Init())
 
 				default: // quit out of the app for now when selecting other games
 					return m, tea.Quit
@@ -159,10 +172,10 @@ func (m *MainMenuModels) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.ScoreMenu, cmd = m.ScoreMenu.Update(msg)
 		return m, cmd
 
-	case utils.Screen(tutils.ScreenTetrisMenu):
-		newModel, cmd := m.TetrisMenu.Update(msg)
-		if tetrisModel, ok := newModel.(*tetrisscreens.TetrisMenuModel); ok {
-			m.TetrisMenu = tetrisModel
+	case utils.Screen(tutils.ScreenTetrisRoot):
+		newModel, cmd := m.Tetris.Update(msg)
+		if tetrisModel, ok := newModel.(*tetris.Model); ok {
+			m.Tetris = tetrisModel
 		}
 
 		return m, cmd
@@ -205,8 +218,8 @@ func (m *MainMenuModels) View() string {
 	case utils.ScreenScoreMenu:
 		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, m.ScoreMenu.View())
 
-	case utils.Screen(tutils.ScreenTetrisMenu):
-		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, m.TetrisMenu.View())
+	case utils.Screen(tutils.ScreenTetrisRoot):
+		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, m.Tetris.View())
 
 	default:
 		return "Unknown screen"
