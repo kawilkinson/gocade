@@ -1,4 +1,4 @@
-package gamelogic
+package tetrislogic
 
 // Massive credits to Tetrigo for the game logic: https://github.com/Broderick-Westrope/tetrigo
 

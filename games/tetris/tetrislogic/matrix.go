@@ -1,4 +1,4 @@
-package gamelogic
+package tetrislogic
 
 import (
 	"errors"
