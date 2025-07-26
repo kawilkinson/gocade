@@ -8,6 +8,8 @@ import (
 	"github.com/charmbracelet/bubbles/progress"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/kawilkinson/gocade/games/tetris/tetrisscreens"
+	"github.com/kawilkinson/gocade/games/tetris/tutils"
 	"github.com/kawilkinson/gocade/internal/screens"
 	"github.com/kawilkinson/gocade/internal/utils"
 )
@@ -18,6 +20,7 @@ type MainMenuModels struct {
 	MainMenu      list.Model
 	GameMenu      list.Model
 	ScoreMenu     list.Model
+	TetrisMenu    *tetrisscreens.TetrisMenuModel
 	LoadingBar    progress.Model
 	loadingValue  float64
 	pulseDotCount int
@@ -38,6 +41,7 @@ func CreateMainMenuModels() *MainMenuModels {
 		MainMenu:   screens.NewMainMenu(utils.MenuWidth, utils.MenuHeight, style),
 		GameMenu:   screens.NewGameMenu(utils.MenuWidth, utils.MenuHeight, keys, style),
 		ScoreMenu:  screens.NewScoreMenu(utils.MenuWidth, utils.MenuHeight, keys, style),
+		TetrisMenu: tetrisscreens.CreateTetrisMenuModel(tetrisscreens.NewMenuInput()),
 		LoadingBar: progressBar,
 	}
 }
@@ -55,11 +59,20 @@ func (m *MainMenuModels) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "q", "ctrl+c": // for quitting the program at any point
+		case "q", "ctrl+c":
 			m.quitting = true
 			return m, screens.ExitGocade()
 
 		case "b": // universal key for moving back to the main menu
+			switch m.Screen {
+			case utils.ScreenGameMenu, utils.ScreenScoreMenu:
+				m.Screen = utils.ScreenMainMenu
+				return m, nil
+
+			case utils.Screen(tutils.ScreenTetrisMenu):
+				m.Screen = utils.ScreenGameMenu
+				return m, tea.ClearScreen
+			}
 			if m.Screen == utils.ScreenGameMenu || m.Screen == utils.ScreenScoreMenu {
 				m.Screen = utils.ScreenMainMenu
 				return m, nil
@@ -85,10 +98,18 @@ func (m *MainMenuModels) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 
 			case utils.ScreenGameMenu:
-				selected := m.GameMenu.SelectedItem().(screens.MenuItem)
-				m.SelectedGame = string(selected)
-				// todo: quit for now, but will change into starting the game and letting the arcade run in the background
-				return m, tea.Quit
+				choice := m.GameMenu.SelectedItem().(screens.MenuItem)
+				m.SelectedGame = string(choice)
+
+				switch m.SelectedGame {
+
+				case "Tetris":
+					m.Screen = utils.Screen(tutils.ScreenTetrisMenu)
+					return m, tea.Sequence(tea.ClearScreen, m.TetrisMenu.Init())
+
+				default: // quit out of the app for now when selecting other games
+					return m, tea.Quit
+				}
 
 			case utils.ScreenScoreMenu:
 				// todo: handle score menu
@@ -96,6 +117,7 @@ func (m *MainMenuModels) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 
+	// this section is for handling the loading and exits
 	case screens.TickMsg:
 		if m.Screen == utils.ScreenLoading {
 			m.loadingValue += 0.001
@@ -116,7 +138,7 @@ func (m *MainMenuModels) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, tea.Quit
 	}
 
-	// screen updates for the main menus
+	// screen updates
 	var cmd tea.Cmd
 	switch m.Screen {
 
@@ -135,6 +157,14 @@ func (m *MainMenuModels) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case utils.ScreenScoreMenu:
 		m.ScoreMenu, cmd = m.ScoreMenu.Update(msg)
+		return m, cmd
+
+	case utils.Screen(tutils.ScreenTetrisMenu):
+		newModel, cmd := m.TetrisMenu.Update(msg)
+		if tetrisModel, ok := newModel.(*tetrisscreens.TetrisMenuModel); ok {
+			m.TetrisMenu = tetrisModel
+		}
+
 		return m, cmd
 	}
 
@@ -174,6 +204,9 @@ func (m *MainMenuModels) View() string {
 
 	case utils.ScreenScoreMenu:
 		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, m.ScoreMenu.View())
+
+	case utils.Screen(tutils.ScreenTetrisMenu):
+		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, m.TetrisMenu.View())
 
 	default:
 		return "Unknown screen"

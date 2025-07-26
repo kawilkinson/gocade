@@ -8,12 +8,12 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/huh"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/kawilkinson/gocade/games/tetris/internal/tetrisconfig"
-	"github.com/kawilkinson/gocade/games/tetris/internal/tutils"
+	"github.com/kawilkinson/gocade/games/tetris/tutils"
+	"github.com/kawilkinson/gocade/internal/screens"
 )
 
 type TetrisMenuModel struct {
-	isCompleted bool
+	IsCompleted bool
 	form        *huh.Form
 	keys        *menuKeyMap
 	formData    *TetrisMenuFormData
@@ -101,7 +101,7 @@ func (m *TetrisMenuModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.width = msg.Width
 		m.height = msg.Height
 		formWidth := msg.Width / 2
-		formWidth = min(formWidth, lipgloss.Width(tetrisconfig.TetrisTitle))
+		formWidth = min(formWidth, lipgloss.Width(RenderTetrisTitle()))
 		m.form = m.form.WithWidth(formWidth)
 		return m, nil
 
@@ -118,7 +118,7 @@ func (m *TetrisMenuModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		cmds = append(cmds, cmd)
 	}
 
-	if m.form.State == huh.StateCompleted && !m.isCompleted {
+	if m.form.State == huh.StateCompleted && !m.IsCompleted {
 		cmds = append(cmds, m.performCompletion())
 	}
 
@@ -126,14 +126,14 @@ func (m *TetrisMenuModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m *TetrisMenuModel) performCompletion() tea.Cmd {
-	m.isCompleted = true
+	m.IsCompleted = true
 
 	switch m.formData.TetrisGame {
 	case tutils.ScreenTetrisGame:
 		input := NewSingleInput(m.formData.Username)
 		return ChangeScreen(m.formData.TetrisGame, input)
 
-	case tutils.ScreenMenu:
+	case tutils.ScreenTetrisMenu:
 		fallthrough
 
 	default:
@@ -144,9 +144,15 @@ func (m *TetrisMenuModel) performCompletion() tea.Cmd {
 func (m *TetrisMenuModel) View() string {
 	content := lipgloss.JoinVertical(
 		lipgloss.Center,
-		tetrisconfig.TetrisTitle+"\n",
+		RenderTetrisTitle()+"\n",
 		m.form.View(),
 	)
 
 	return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, content)
+}
+
+// helper function to ensure Tetris title always shows correctly in Tetris menu
+func RenderTetrisTitle() string {
+	normalizedTitle := screens.NormalizeWidth(tutils.TetrisTitle)
+	return normalizedTitle
 }

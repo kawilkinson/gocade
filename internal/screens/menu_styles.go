@@ -47,5 +47,6 @@ func NormalizeWidth(ascii string) string {
 			lines[i] = line + strings.Repeat(" ", pad)
 		}
 	}
+	
 	return strings.Join(lines, "\n")
 }
