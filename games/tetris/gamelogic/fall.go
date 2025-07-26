@@ -1,0 +1,33 @@
+package gamelogic
+
+import (
+	"math"
+	"time"
+)
+
+// Massive credits to Tetrigo for the game logic: https://github.com/Broderick-Westrope/tetrigo
+
+type Fall struct {
+	DefaultInterval  time.Duration
+	SoftDropInterval time.Duration
+	IsSoftDrop       bool
+}
+
+func NewFall(level int) *Fall {
+	f := Fall{}
+	f.CalculateFallSpeeds(level)
+	return &f
+}
+
+func (f *Fall) CalculateFallSpeeds(level int) {
+	decrementedLevel := float64(level - 1)
+	speed := math.Pow(0.8-(decrementedLevel*0.007), decrementedLevel)
+	speed *= float64(time.Second)
+
+	f.DefaultInterval = time.Duration(speed)
+	f.SoftDropInterval = time.Duration(speed / 15)
+}
+
+func (f *Fall) ToggleSoftDrop() {
+	f.IsSoftDrop = !f.IsSoftDrop
+}
