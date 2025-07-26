@@ -18,9 +18,9 @@ func (k MainMenuKeys) FullHelp() [][]key.Binding {
 	}
 }
 
-func AdditionalMainMenuKeys() *MainMenuKeys {
+func SetExtraMainMenuKeys() *MainMenuKeys {
 	keys := &MainMenuKeys{
-		BackKey: key.NewBinding(key.WithKeys("b"), key.WithHelp("b", "return to prev screen")),
+		BackKey: key.NewBinding(key.WithKeys("b"), key.WithHelp("b", "go back")),
 	}
 
 	return keys

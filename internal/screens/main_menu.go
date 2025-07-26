@@ -6,22 +6,24 @@ import (
 	"github.com/kawilkinson/gocade/internal/utils"
 )
 
-func NewMainMenu(width, height int) list.Model {
+func NewMainMenu(width, height int, style *MenuStyles) list.Model {
 	items := []list.Item{
 		MenuItem("Play Game"),
 		MenuItem("High Scores"),
 		MenuItem("Quit"),
 	}
 
-	mainMenu := list.New(items, MenuDelegate{}, width, height)
+	delegate := MenuDelegate{Styles: style}
+
+	mainMenu := list.New(items, delegate, width, height)
 	mainMenu.Title = "Gocade"
 	mainMenu.SetShowStatusBar(false)
 	mainMenu.SetFilteringEnabled(false)
-	mainMenu.Styles.Title = titleStyle
+	mainMenu.Styles.Title = style.TitleStyle
 	return mainMenu
 }
 
-func RenderGopher(width, height int) string {
-	gopher := GopherStyle.Render(normalizeWidth(utils.GopherMascot))
+func RenderGopher(width, height int, style *MenuStyles) string {
+	gopher := style.GopherStyle.Render(NormalizeWidth(utils.GopherMascot))
 	return lipgloss.Place(width, lipgloss.Height(utils.GopherMascot), lipgloss.Center, lipgloss.Top, gopher)
 }

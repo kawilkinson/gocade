@@ -14,6 +14,7 @@ import (
 
 type MainMenuModels struct {
 	Screen        utils.Screen
+	Style         *screens.MenuStyles
 	MainMenu      list.Model
 	GameMenu      list.Model
 	ScoreMenu     list.Model
@@ -28,13 +29,15 @@ type MainMenuModels struct {
 
 func CreateModels() *MainMenuModels {
 	progressBar := progress.New(progress.WithGradient("#00ADD8", "#0082A8"), progress.WithWidth(40))
-	keys := utils.AdditionalMainMenuKeys() // only additional since most of the defaults Bubble Tea has are good enough
+	keys := utils.SetExtraMainMenuKeys() // only additional since most of the defaults Bubble Tea has are good enough
+	style := screens.CreateMenuStyle()
 
 	return &MainMenuModels{
 		Screen:     utils.ScreenLoading,
-		MainMenu:   screens.NewMainMenu(utils.MenuWidth, utils.MenuHeight),
-		GameMenu:   screens.NewGameMenu(utils.MenuWidth, utils.MenuHeight, keys),
-		ScoreMenu:  screens.NewScoreMenu(utils.MenuWidth, utils.MenuHeight, keys),
+		Style:      style,
+		MainMenu:   screens.NewMainMenu(utils.MenuWidth, utils.MenuHeight, style),
+		GameMenu:   screens.NewGameMenu(utils.MenuWidth, utils.MenuHeight, keys, style),
+		ScoreMenu:  screens.NewScoreMenu(utils.MenuWidth, utils.MenuHeight, keys, style),
 		LoadingBar: progressBar,
 	}
 }
@@ -141,7 +144,7 @@ func (m *MainMenuModels) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m *MainMenuModels) View() string {
 	if m.quitting {
 		dots := strings.Repeat(".", m.pulseDotCount)
-		quitText := screens.QuitTextStyle.Render(fmt.Sprintf("Exiting Gocade%s", dots))
+		quitText := m.Style.QuitTextStyle.Render(fmt.Sprintf("Exiting Gocade%s", dots))
 		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, quitText)
 	}
 
@@ -159,7 +162,7 @@ func (m *MainMenuModels) View() string {
 		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, content)
 
 	case utils.ScreenMainMenu:
-		gopher := screens.RenderGopher(m.width, m.height)
+		gopher := screens.RenderGopher(m.width, m.height, m.Style)
 		mainMenu := m.MainMenu.View()
 
 		content := lipgloss.JoinVertical(lipgloss.Center, gopher, mainMenu)

@@ -7,18 +7,20 @@ import (
 )
 
 // function currently is using the game menu logic as a placeholder
-func NewScoreMenu(width, height int, keys *utils.MainMenuKeys) list.Model {
+func NewScoreMenu(width, height int, keys *utils.MainMenuKeys, style *MenuStyles) list.Model {
 	games := []list.Item{
 		MenuItem("Snake"),
 		MenuItem("Tetris"),
 		MenuItem("Pong"),
 	}
 
-	scoreMenu := list.New(games, MenuDelegate{}, width, height)
+	delegate := MenuDelegate{Styles: style}
+
+	scoreMenu := list.New(games, delegate, width, height)
 	scoreMenu.Title = "Select a High Score list to view"
 	scoreMenu.SetShowStatusBar(false)
 	scoreMenu.SetFilteringEnabled(false)
-	scoreMenu.Styles.Title = titleStyle
+	scoreMenu.Styles.Title = style.TitleStyle
 
 	scoreMenu.AdditionalShortHelpKeys = keys.ShortHelp
 	scoreMenu.AdditionalFullHelpKeys = func() []key.Binding {

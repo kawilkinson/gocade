@@ -6,18 +6,20 @@ import (
 	"github.com/kawilkinson/gocade/internal/utils"
 )
 
-func NewGameMenu(width, height int, keys *utils.MainMenuKeys) list.Model {
+func NewGameMenu(width, height int, keys *utils.MainMenuKeys, style *MenuStyles) list.Model {
 	games := []list.Item{ // not final games, currently here as placeholders
 		MenuItem("Snake"),
 		MenuItem("Tetris"),
 		MenuItem("Pong"),
 	}
 
-	gameMenu := list.New(games, MenuDelegate{}, width, height)
+	delegate := MenuDelegate{Styles: style}
+
+	gameMenu := list.New(games, delegate, width, height)
 	gameMenu.Title = "Select a Game"
 	gameMenu.SetShowStatusBar(false)
 	gameMenu.SetFilteringEnabled(false)
-	gameMenu.Styles.Title = titleStyle
+	gameMenu.Styles.Title = style.TitleStyle
 
 	gameMenu.AdditionalShortHelpKeys = keys.ShortHelp
 	gameMenu.AdditionalFullHelpKeys = func() []key.Binding {
