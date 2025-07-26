@@ -2,7 +2,7 @@ package tetrisconfig
 
 type Theme struct {
 	Colours struct {
-		TetriminoCells struct { // these are all the tetromino piece types
+		TetriminoCells struct { // these are all the tetrimino piece types
 			I string
 			O string
 			T string

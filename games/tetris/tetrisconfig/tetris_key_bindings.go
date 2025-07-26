@@ -41,11 +41,11 @@ func SetTetrisKeyBindings() *TetrisKeys {
 		ToggleSoftDrop:         key.NewBinding(key.WithKeys("s"), key.WithHelp("s", "toggle soft drop")),
 		Left:                   key.NewBinding(key.WithKeys("a"), key.WithHelp("a", "move left")),
 		Right:                  key.NewBinding(key.WithKeys("d"), key.WithHelp("d", "move right")),
-		RotateClockwise:        key.NewBinding(key.WithKeys("q"), key.WithHelp("q", "rotate tetromino clockwise")),
-		RotateCounterClockwise: key.NewBinding(key.WithKeys("e"), key.WithHelp("e", "rotate tetromino counterclockwise")),
+		RotateClockwise:        key.NewBinding(key.WithKeys("q"), key.WithHelp("q", "rotate tetrimino clockwise")),
+		RotateCounterClockwise: key.NewBinding(key.WithKeys("e"), key.WithHelp("e", "rotate tetrimino counterclockwise")),
 		Exit:                   key.NewBinding(key.WithKeys("esc"), key.WithHelp("esc", "exit")),
 		HardExit:               key.NewBinding(key.WithKeys("ctrl+c"), key.WithHelp("ctrl+c", "force exit")),
-		Hold:                   key.NewBinding(key.WithKeys(" ", "enter"), key.WithHelp("space/enter", "hold a tetromino")),
+		Hold:                   key.NewBinding(key.WithKeys(" ", "enter"), key.WithHelp("space/enter", "hold a tetrimino")),
 	}
 
 	return keys
