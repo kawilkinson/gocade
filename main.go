@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	mainMenu := CreateModels()
+	mainMenu := CreateMainMenuModels()
 
 	p := tea.NewProgram(mainMenu, tea.WithAltScreen())
 

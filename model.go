@@ -27,7 +27,7 @@ type MainMenuModels struct {
 	quitting      bool
 }
 
-func CreateModels() *MainMenuModels {
+func CreateMainMenuModels() *MainMenuModels {
 	progressBar := progress.New(progress.WithGradient("#00ADD8", "#0082A8"), progress.WithWidth(40))
 	keys := utils.SetExtraMainMenuKeys() // only additional since most of the defaults Bubble Tea has are good enough
 	style := screens.CreateMenuStyle()

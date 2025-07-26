@@ -10,7 +10,7 @@ const (
 	LoadingTickSpeed     = 2   // milliseconds
 	LoadingDotPulseSpeed = 500 // milliseconds
 
-	ScreenLoading Screen = iota
+	ScreenLoading = Screen(iota)
 	ScreenMainMenu
 	ScreenGameMenu
 	ScreenScoreMenu
