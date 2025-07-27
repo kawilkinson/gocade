@@ -5,7 +5,7 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/kawilkinson/gocade/games/tetris/tutils"
+	"github.com/kawilkinson/gocade/internal/utils"
 )
 
 type Score struct {
@@ -20,13 +20,13 @@ func SaveScore(s Score, mode string) error {
 	var scoreFile string
 	switch mode {
 	case "Marathon":
-		scoreFile = tutils.MarathonScoreFile
+		scoreFile = utils.MarathonScoreFile
 
 	case "Sprint":
-		scoreFile = tutils.SprintScoreFile
+		scoreFile = utils.SprintScoreFile
 
 	case "Ultra":
-		scoreFile = tutils.UltraScoreFile
+		scoreFile = utils.UltraScoreFile
 	}
 
 	file, err := os.OpenFile(scoreFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)

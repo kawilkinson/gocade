@@ -10,6 +10,12 @@ const (
 	MenuWidth  = 50
 	MenuHeight = 12
 
+	// leaderboard files
+	MarathonScoreFile = "internal/leaderboard/data/tetris_marathon_scores.csv"
+	SprintScoreFile = "internal/leaderboard/data/tetris_sprint_scores.csv"
+	UltraScoreFile = "internal/leaderboard/data/tetris_ultra_scores.csv"
+	SnakeScoreFile = "internal/leaderboard/data/snake_scores.csv"
+
 	ExitScreenTickSpeed  = 2   // seconds
 	LoadingTickSpeed     = 2   // milliseconds
 	LoadingDotPulseSpeed = 500 // milliseconds

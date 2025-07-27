@@ -26,22 +26,35 @@ type LeaderboardModel struct {
 	err error
 }
 
-func NewLeaderBoardMenu(filename string) *LeaderboardModel {
+func NewLeaderBoardMenu(filename, game string) *LeaderboardModel {
 	data, err := LoadScores(filename)
-    if err != nil {
-        data = [][]string{
-            {"No score", "-", "-", "-", "-"}, 
-        }
-    } else if len(data) == 0 {
-        data = [][]string{
-            {"No score", "-", "-", "-", "-"}, 
-        }
-    }
+
+	var table table.Model
+	switch game {
+
+	case "Tetris":
+		if err != nil {
+			data = [][]string{
+				{"No score", "-", "-", "-", "-"},
+			}
+		}
+
+		table = createTetrisLeaderboardTable(data)
+
+	case "Snake":
+		if err != nil {
+			data = [][]string{
+				{"No score", "-"},
+			}
+		}
+
+		table = createSnakeLeaderboardTable(data)
+	}
 
 	return &LeaderboardModel{
 		keys:  menuconfig.DefaultLeaderboardKeyBindings(),
 		help:  help.New(),
-		table: createLeaderboardTable(data),
+		table: table,
 		err:   err,
 	}
 }
@@ -96,9 +109,9 @@ func LoadScores(filename string) ([][]string, error) {
 	return scores, nil
 }
 
-func createLeaderboardTable(scores [][]string) table.Model {
+func createTetrisLeaderboardTable(scores [][]string) table.Model {
 	cols := []table.Column{
-		{Title: "Name", Width: 10},
+		{Title: "Name", Width: 15},
 		{Title: "Score", Width: 10},
 		{Title: "Lines", Width: 10},
 		{Title: "Level", Width: 5},
@@ -120,6 +133,45 @@ func createLeaderboardTable(scores [][]string) table.Model {
 			lines,
 			level,
 			mode,
+		}
+	}
+
+	style := table.DefaultStyles()
+	style.Header = style.Header.
+		BorderStyle(lipgloss.NormalBorder()).
+		BorderForeground(lipgloss.Color(utils.GopherColor)).
+		BorderBottom(true).
+		Bold(false)
+
+	style.Selected = style.Selected.
+		Foreground(lipgloss.Color(utils.DarkerGopherColor)).
+		Bold(false)
+
+	t := table.New(
+		table.WithColumns(cols),
+		table.WithRows(rows),
+		table.WithFocused(true),
+		table.WithStyles(style),
+	)
+
+	return t
+}
+
+func createSnakeLeaderboardTable(scores [][]string) table.Model {
+	cols := []table.Column{
+		{Title: "Name", Width: 15},
+		{Title: "Score", Width: 10},
+	}
+
+	rows := make([]table.Row, len(scores))
+
+	for i, s := range scores {
+		name := s[0]
+		score := s[1]
+
+		rows[i] = table.Row{
+			name,
+			score,
 		}
 	}
 

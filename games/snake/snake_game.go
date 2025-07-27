@@ -5,6 +5,8 @@ import (
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/kawilkinson/gocade/games/snake/snakeconfig"
+	"github.com/kawilkinson/gocade/games/snake/snakedata"
 	"github.com/kawilkinson/gocade/games/snake/sutils"
 )
 
@@ -37,6 +39,13 @@ func (m *SnakeGameModel) Tick() tea.Cmd {
 func (m *SnakeGameModel) ChangeSnakeDirection(direction int) (tea.Model, tea.Cmd) {
 	if m.Snake.HitWall(m) {
 		m.GameOver = true
+
+		score := snakedata.Score{
+			Username: m.Username,
+			Score:    m.Score,
+		}
+
+		snakedata.SaveScore(score)
 
 		return m, nil
 	}
@@ -81,6 +90,13 @@ func (m *SnakeGameModel) MoveSnake() (tea.Model, tea.Cmd) {
 
 	if ExtraHitWallCheck(m, coord) || m.Snake.HitSelf(coord) {
 		m.GameOver = true
+
+		score := snakedata.Score{
+			Username: m.Username,
+			Score:    m.Score,
+		}
+
+		snakedata.SaveScore(score)
 
 		return m, nil
 	}
@@ -151,7 +167,9 @@ func (m *SnakeGameModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if key, ok := msg.(tea.KeyMsg); ok {
 			switch key.String() {
 			case "esc", "q", "ctrl+c":
-				return m, tea.Quit
+				return m, func() tea.Msg {
+					return snakeconfig.SwitchToMenuMsg{}
+				}
 			}
 		}
 		return m, nil

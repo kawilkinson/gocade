@@ -29,7 +29,7 @@ type MenuFormData struct {
 	Screen   sutils.Screen
 }
 
-func NewMenuModel(_ *snakeconfig.MenuInput) *MenuModel {
+func CreateMenuModel() *MenuModel {
 	formData := new(MenuFormData)
 	keys := snakeconfig.SetSnakeMenuKeys()
 
@@ -112,8 +112,8 @@ func (m *MenuModel) View() string {
 	form := m.form.View()
 
 	helpText := lipgloss.NewStyle().
-	Foreground(lipgloss.Color("8")).
-	Render("Press 'esc' at any time in this menu to exit the game")
+		Foreground(lipgloss.Color("8")).
+		Render("Press 'esc' at any time in this menu to exit the game")
 
 	menuStyle := lipgloss.NewStyle().
 		Width(m.width).
@@ -124,9 +124,9 @@ func (m *MenuModel) View() string {
 
 	mainContent := menuStyle.Render(content)
 	footer := lipgloss.NewStyle().
-	Width(m.width).
-	Align(lipgloss.Center).
-	Render(helpText)
+		Width(m.width).
+		Align(lipgloss.Center).
+		Render(helpText)
 
 	return lipgloss.JoinVertical(lipgloss.Left, mainContent, footer)
 }

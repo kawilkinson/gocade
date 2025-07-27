@@ -11,7 +11,7 @@ type Model struct {
 
 func NewModel() Model {
 	return Model{
-		current: NewMenuModel(nil),
+		current: CreateMenuModel(),
 	}
 }
 
@@ -21,6 +21,11 @@ func (m Model) Init() tea.Cmd {
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+
+	case snakeconfig.SwitchToMenuMsg:
+		menu := CreateMenuModel()
+		return Model{current: menu}, menu.Init()
+
 	case snakeconfig.SwitchToGameMsg:
 		game := CreateSnakeGameModel()
 		game.Username = msg.Username

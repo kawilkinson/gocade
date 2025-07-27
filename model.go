@@ -118,19 +118,27 @@ func (m *MainMenuModels) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				choice := m.ScoreMenu.SelectedItem().(screens.MenuItem)
 
 				var filename string
+				var game string
 				switch choice {
 
 				case "Marathon Tetris":
-					filename = "internal/leaderboard/data/tetris_marathon_scores.csv"
+					filename = utils.MarathonScoreFile
+					game = "Tetris"
 
 				case "Sprint Tetris":
-					filename = "internal/leaderboard/data/tetris_sprint_scores.csv"
+					filename = utils.SprintScoreFile
+					game = "Tetris"
 
 				case "Ultra Tetris":
-					filename = "internal/leaderboard/data/tetris_ultra_scores.csv"
+					filename = utils.UltraScoreFile
+					game = "Tetris"
+
+				case "Snake":
+					filename = utils.SnakeScoreFile
+					game = "Snake"
 				}
 
-				m.Leaderboard = leaderboard.NewLeaderBoardMenu(filename)
+				m.Leaderboard = leaderboard.NewLeaderBoardMenu(filename, game)
 				m.Screen = utils.ScreenLeaderboard
 				return m, nil
 			}

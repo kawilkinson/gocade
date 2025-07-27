@@ -9,11 +9,11 @@ import (
 )
 
 type Score struct {
-	Name  string
-	Score int
+	Username string
+	Score    int
 }
 
-func SaveScore(s Score, mode string) error {
+func SaveScore(s Score) error {
 	scoreFile := sutils.SnakeScoreFile
 
 	file, err := os.OpenFile(scoreFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
@@ -26,7 +26,7 @@ func SaveScore(s Score, mode string) error {
 	defer writer.Flush()
 
 	record := []string{
-		s.Name,
+		s.Username,
 		strconv.Itoa(s.Score),
 	}
 

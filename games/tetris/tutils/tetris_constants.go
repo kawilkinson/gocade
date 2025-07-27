@@ -11,10 +11,6 @@ type Screen int
 const (
 	TimerUpdateInterval = time.Millisecond * 13
 
-	MarathonScoreFile = "internal/leaderboard/data/tetris_marathon_scores.csv"
-	SprintScoreFile = "internal/leaderboard/data/tetris_sprint_scores.csv"
-	UltraScoreFile = "internal/leaderboard/data/tetris_ultra_scores.csv"
-
 	// ASCII text for styling purposes
 	TetrisTitle = `
  _____    _        _     

@@ -12,6 +12,7 @@ func NewScoreMenu(width, height int, keys *menuconfig.MainMenuKeys, style *MenuS
 		MenuItem("Marathon Tetris"),
 		MenuItem("Sprint Tetris"),
 		MenuItem("Ultra Tetris"),
+		MenuItem("Snake"),
 	}
 
 	delegate := MenuDelegate{Styles: style}

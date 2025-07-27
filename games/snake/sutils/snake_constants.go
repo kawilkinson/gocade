@@ -9,8 +9,6 @@ const (
 
 	SnakeScoreFile = "internal/leaderboard/data/snake_scores.csv"
 
-
-
 	// screens for snake game
 	SnakeMenu = Screen(iota)
 	SnakeGame
@@ -26,6 +24,7 @@ const (
 	GameOverMessage = "\n\nGame Over!\n"
 
 	SnakeTitle = `
+	 _____             _
 	/  ___|           | |       
 	\ '--. _ __   __ _| | _____ 
 	'--. \ '_ \ / _' | |/ / _ \

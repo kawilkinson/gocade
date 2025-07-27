@@ -2,7 +2,6 @@ package snakeconfig
 
 import (
 	"github.com/charmbracelet/bubbles/key"
-	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/huh"
 	"github.com/kawilkinson/gocade/games/snake/sutils"
 )
@@ -23,33 +22,9 @@ func SetSnakeMenuKeys() *MenuKeyMap {
 	return keys
 }
 
-type MenuInput struct{}
-
-func NewMenuInput() *MenuInput {
-	return &MenuInput{}
-}
-
-func (in *MenuInput) isSwitchModeInput() {}
-
-type SwitchScreenMsg struct {
-	Target sutils.Screen
-	Input  SwitchModeInput
-}
-
-type SwitchModeInput interface {
-	isSwitchModeInput()
-}
-
-func SwitchModeCmd(target sutils.Screen, in SwitchModeInput) tea.Cmd {
-	return func() tea.Msg {
-		return SwitchScreenMsg{
-			Target: target,
-			Input:  in,
-		}
-	}
-}
-
 type SwitchToGameMsg struct {
     Username string
     Screen   sutils.Screen
 }
+
+type SwitchToMenuMsg struct {}
