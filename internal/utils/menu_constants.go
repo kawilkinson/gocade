@@ -7,7 +7,7 @@ import (
 type Screen int
 
 const (
-	MenuWidth  = 20
+	MenuWidth  = 40
 	MenuHeight = 12
 
 	ExitScreenTickSpeed  = 2   // seconds
