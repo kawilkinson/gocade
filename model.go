@@ -235,7 +235,7 @@ func (m *MainMenuModels) View() string {
 		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, content)
 
 	case utils.ScreenScoreMenu:
-		gopher := screens.RenderGopher(m.width, m.height, m.Style, utils.GopherMascotSword)
+		gopher := screens.RenderGopher(m.width, m.height, m.Style, utils.BuffGopher)
 		scoreMenu := m.ScoreMenu.View()
 
 		content := lipgloss.JoinVertical(lipgloss.Center, gopher, scoreMenu)

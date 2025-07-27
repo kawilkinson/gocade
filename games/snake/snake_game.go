@@ -15,6 +15,7 @@ type SnakeGameModel struct {
 	VerticalLine   string
 	EmptySymbol    string
 	SnakeSymbol    string
+	HeadSymbol     string
 	FoodSymbol     string
 	Stage          [][]string
 	Snake          Snake
@@ -23,6 +24,10 @@ type SnakeGameModel struct {
 	Food           Food
 
 	Username string
+
+	// grab terminal dimensions for centering purposes
+	TerminalWidth  int
+	TerminalHeight int
 
 	Width  int
 	Height int
@@ -125,11 +130,12 @@ func (m *SnakeGameModel) SpawnFood() {
 
 func CreateSnakeGameModel() *SnakeGameModel {
 	return &SnakeGameModel{
-		HorizontalLine: "#",
-		VerticalLine:   "#",
+		HorizontalLine: "█",
+		VerticalLine:   "█",
 		EmptySymbol:    " ",
-		SnakeSymbol:    "o",
-		FoodSymbol:     "$",
+		SnakeSymbol:    "○",
+		HeadSymbol:     "●",
+		FoodSymbol:     "◆",
 		Stage:          [][]string{},
 		GameOver:       false,
 		Score:          0,
@@ -152,13 +158,13 @@ func CreateSnakeGameModel() *SnakeGameModel {
 func (m *SnakeGameModel) Init() tea.Cmd {
 	var x, y int
 
-	x = rand.IntN(m.Height - 1)
-	y = rand.IntN(m.Width - 1)
+	x = rand.IntN(m.Height-2) + 1
+	y = rand.IntN(m.Width-2) + 1
 
 	m.Food.x = x
 	m.Food.y = y
 
-	return m.Tick()
+	return tea.Batch(m.Tick(), tea.ClearScreen, tea.EnterAltScreen, tea.WindowSize())
 }
 
 func (m *SnakeGameModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -176,6 +182,11 @@ func (m *SnakeGameModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	switch msg := msg.(type) {
+
+	case tea.WindowSizeMsg:
+		m.TerminalWidth = msg.Width
+		m.TerminalHeight = msg.Height
+		return m, nil
 
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -206,5 +217,11 @@ func (m *SnakeGameModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 // main goal with the view is to keep things super simple,
 // so I'm using a function that draws all the strings of the entire game here
 func (m *SnakeGameModel) View() string {
-	return m.RenderGame()
+	game := m.RenderGame()
+
+	// center in terminal
+	return snakeconfig.CenterStyle.
+		Width(m.TerminalWidth).
+		Height(m.TerminalHeight).
+		Render(game)
 }

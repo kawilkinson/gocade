@@ -27,10 +27,17 @@ func RenderStage(m *SnakeGameModel) {
 		strings.Split(m.VerticalLine+strings.Repeat(m.HorizontalLine, m.Width-2)+m.VerticalLine, ""))
 }
 
+// render the body separately from the head
 func RenderSnake(m *SnakeGameModel) {
-	for _, b := range m.Snake.Body {
+	bodyLen := len(m.Snake.Body)
+
+	for i := 0; i < bodyLen-1; i++ {
+		b := m.Snake.Body[i]
 		m.Stage[b.x][b.y] = m.SnakeSymbol
 	}
+
+	head := m.Snake.Body[bodyLen-1]
+	m.Stage[head.x][head.y] = m.HeadSymbol
 }
 
 func RenderFood(m *SnakeGameModel) {
@@ -63,7 +70,7 @@ func RenderGameOver() string {
 	return gameOverStyle.Render(sutils.GameOverMessage)
 }
 
-func RenderTitle(username string) string {
+func RenderUsername(username string) string {
 	titleStyle := lipgloss.NewStyle().Bold(true).
 		Foreground(lipgloss.Color(utils.GopherColor)).
 		Width(40).
@@ -71,14 +78,14 @@ func RenderTitle(username string) string {
 		MarginTop(1).
 		MarginBottom(1)
 
-	return titleStyle.Render(username)
+	return titleStyle.Render("Username: " + username)
 }
 
 func (m *SnakeGameModel) RenderGame() string {
 	var strBuilder strings.Builder
 	var strStage strings.Builder
 
-	strBuilder.WriteString(RenderTitle(m.Username))
+	strBuilder.WriteString(RenderUsername(m.Username))
 	strBuilder.WriteByte('\n')
 
 	RenderStage(m)

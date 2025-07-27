@@ -117,21 +117,21 @@ func (m *MenuModel) View() string {
 	form := m.form.View()
 
 	helpText := lipgloss.NewStyle().
-	Foreground(lipgloss.Color("8")).
-	Render("Press 'esc' at any time in this menu to exit the game")
-	
+		Foreground(lipgloss.Color("8")).
+		Render("Press 'esc' at any time in this menu to exit the game")
+
 	menuStyle := lipgloss.NewStyle().
 		Width(m.width).
 		Height(m.height).
 		Align(lipgloss.Center, lipgloss.Center)
-	
+
 	content := lipgloss.JoinVertical(lipgloss.Center, title, form)
 
 	mainContent := menuStyle.Render(content)
 	footer := lipgloss.NewStyle().
-	Width(m.width).
-	Align(lipgloss.Center).
-	Render(helpText)
-	
+		Width(m.width).
+		Align(lipgloss.Center).
+		Render(helpText)
+
 	return lipgloss.JoinVertical(lipgloss.Left, mainContent, footer)
 }

@@ -23,8 +23,8 @@ func SetSnakeMenuKeys() *MenuKeyMap {
 }
 
 type SwitchToGameMsg struct {
-    Username string
-    Screen   sutils.Screen
+	Username string
+	Screen   sutils.Screen
 }
 
-type SwitchToMenuMsg struct {}
+type SwitchToMenuMsg struct{}

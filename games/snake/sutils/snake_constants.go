@@ -20,7 +20,7 @@ const (
 	Down
 
 	// text to render for the game
-	HelpMessage     = "\n\nUse arrow keys or wasd keys to nagivate the snake.\n\n\nq, esc, or ctrl+c quits the game\n"
+	HelpMessage     = "\n\nUse arrow keys or wasd keys to turn the snake.\n\n\nq, esc, or ctrl+c quits the game\n"
 	GameOverMessage = "\n\nGame Over!\n"
 
 	SnakeTitle = `
