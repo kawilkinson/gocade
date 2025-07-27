@@ -1,4 +1,4 @@
-package tetrisscreens
+package snake
 
 import (
 	"errors"
@@ -8,9 +8,8 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/huh"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/kawilkinson/gocade/games/tetris/tetrisconfig"
-	"github.com/kawilkinson/gocade/games/tetris/tutils"
-	"github.com/kawilkinson/gocade/internal/utils"
+	"github.com/kawilkinson/gocade/games/snake/snakeconfig"
+	"github.com/kawilkinson/gocade/games/snake/sutils"
 )
 
 var _ tea.Model = &MenuModel{}
@@ -18,7 +17,7 @@ var _ tea.Model = &MenuModel{}
 type MenuModel struct {
 	form                   *huh.Form
 	hasAnnouncedCompletion bool
-	keys                   *tetrisconfig.MenuKeyMap
+	keys                   *snakeconfig.MenuKeyMap
 	formData               *MenuFormData
 
 	width  int
@@ -27,13 +26,12 @@ type MenuModel struct {
 
 type MenuFormData struct {
 	Username string
-	GameMode tetrisconfig.Mode
-	Level    int
+	Screen   sutils.Screen
 }
 
-func NewMenuModel(_ *tetrisconfig.MenuInput) *MenuModel {
+func NewMenuModel(_ *snakeconfig.MenuInput) *MenuModel {
 	formData := new(MenuFormData)
-	keys := tetrisconfig.SetTetrisMenuKeys()
+	keys := snakeconfig.SetSnakeMenuKeys()
 
 	return &MenuModel{
 		formData: formData,
@@ -47,16 +45,11 @@ func NewMenuModel(_ *tetrisconfig.MenuInput) *MenuModel {
 						}
 						return nil
 					}),
-				huh.NewSelect[tetrisconfig.Mode]().Value(&formData.GameMode).
-					Title("Game Mode:").
+				huh.NewSelect[sutils.Screen]().Value(&formData.Screen).
+					Title("Hit Enter to Start").
 					Options(
-						huh.NewOption("Marathon", tetrisconfig.ModeMarathon),
-						huh.NewOption("Sprint (40 Lines)", tetrisconfig.ModeSprint),
-						huh.NewOption("Ultra (Time Trial)", tetrisconfig.ModeUltra),
+						huh.NewOption("Start Game", sutils.SnakeGame),
 					),
-				huh.NewSelect[int]().Value(&formData.Level).
-					Title("Starting Level:").
-					Options(utils.HuhIntRangeOptions(1, 15)...),
 			),
 		).WithKeyMap(keys.FormKeys),
 		keys: keys,
@@ -78,7 +71,7 @@ func (m *MenuModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.width = msg.Width
 		m.height = msg.Height
 		formWidth := msg.Width / 2
-		formWidth = min(formWidth, lipgloss.Width(tutils.RenderLargeText(tutils.TetrisTitle)))
+		formWidth = min(formWidth, lipgloss.Width(sutils.RenderLargeText(sutils.SnakeTitle)))
 		m.form = m.form.WithWidth(formWidth)
 		return m, nil
 	}
@@ -100,29 +93,30 @@ func (m *MenuModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m *MenuModel) announceCompletion() tea.Cmd {
 	m.hasAnnouncedCompletion = true
 
-	switch m.formData.GameMode {
-	case tetrisconfig.ModeMarathon, tetrisconfig.ModeSprint, tetrisconfig.ModeUltra:
-		in := tetrisconfig.NewSingleInput(m.formData.GameMode, m.formData.Level, m.formData.Username)
-		return tetrisconfig.SwitchModeCmd(m.formData.GameMode, in)
+	switch m.formData.Screen {
+	case sutils.SnakeGame:
+		return func() tea.Msg {
+			return snakeconfig.SwitchToGameMsg{
+				Username: m.formData.Username,
+				Screen:   m.formData.Screen,
+			}
+		}
 
-	case tetrisconfig.ModeMenu, tetrisconfig.ModeLeaderboard:
-		fallthrough
 	default:
-		return tutils.ErrorCmd(fmt.Errorf("invalid mode for starting game %q", m.formData.GameMode))
+		return sutils.ErrorCmd(fmt.Errorf("invalid option for starting game %q", m.formData.Screen))
 	}
 }
 
 func (m *MenuModel) View() string {
-
-	title := tutils.RenderLargeText(tutils.TetrisTitle)
+	title := sutils.RenderLargeText(sutils.SnakeTitle)
 	form := m.form.View()
-	
-	containerStyle := lipgloss.NewStyle().
+
+	menuStyle := lipgloss.NewStyle().
 		Width(m.width).
 		Height(m.height).
 		Align(lipgloss.Center, lipgloss.Center)
-	
+
 	content := lipgloss.JoinVertical(lipgloss.Center, title, form)
-	
-	return containerStyle.Render(content)
+
+	return menuStyle.Render(content)
 }

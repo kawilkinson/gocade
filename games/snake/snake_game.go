@@ -20,6 +20,8 @@ type SnakeGameModel struct {
 	Score          int
 	Food           Food
 
+	Username string
+
 	Width  int
 	Height int
 }
@@ -36,7 +38,7 @@ func (m *SnakeGameModel) ChangeSnakeDirection(direction int) (tea.Model, tea.Cmd
 	if m.Snake.HitWall(m) {
 		m.GameOver = true
 
-		return m, tea.Quit
+		return m, nil
 	}
 
 	oppDir := map[int]int{
@@ -71,25 +73,16 @@ func (m *SnakeGameModel) MoveSnake() (tea.Model, tea.Cmd) {
 		coord.y++
 	}
 
+	// hit food, then spawn it in new coordinate
 	if coord.x == m.Food.x && coord.y == m.Food.y {
 		m.Snake.Length++
-		x := rand.IntN(m.Height-1) + 1
-		y := rand.IntN(m.Width-1) + 1
-
-		for {
-			if !m.Snake.HitSelf(Coordinate{x, y}) {
-				break
-			}
-		}
-
-		m.Food.y = y
-		m.Food.x = x
+		m.SpawnFood()
 	}
 
-	if m.Snake.HitWall(m) || m.Snake.HitSelf(coord) {
+	if ExtraHitWallCheck(m, coord) || m.Snake.HitSelf(coord) {
 		m.GameOver = true
 
-		return m, tea.Quit
+		return m, nil
 	}
 
 	if len(m.Snake.Body) < m.Snake.Length {
@@ -100,6 +93,18 @@ func (m *SnakeGameModel) MoveSnake() (tea.Model, tea.Cmd) {
 	}
 
 	return m, m.Tick()
+}
+
+func (m *SnakeGameModel) SpawnFood() {
+	for {
+		x := rand.IntN(m.Height-2) + 1
+		y := rand.IntN(m.Width-2) + 1
+
+		if !m.Snake.HitSelf(Coordinate{x, y}) {
+			m.Food = Food{x: x, y: y}
+			break
+		}
+	}
 }
 
 func CreateSnakeGameModel() *SnakeGameModel {
@@ -141,6 +146,17 @@ func (m *SnakeGameModel) Init() tea.Cmd {
 }
 
 func (m *SnakeGameModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	// purpose of this is to pause the game on game over and show the player the game over message
+	if m.GameOver {
+		if key, ok := msg.(tea.KeyMsg); ok {
+			switch key.String() {
+			case "esc", "q", "ctrl+c":
+				return m, tea.Quit
+			}
+		}
+		return m, nil
+	}
+
 	switch msg := msg.(type) {
 
 	case tea.KeyMsg:

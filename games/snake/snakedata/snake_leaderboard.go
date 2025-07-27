@@ -1,33 +1,20 @@
-package tetrisdata
+package snakedata
 
 import (
 	"encoding/csv"
 	"os"
 	"strconv"
 
-	"github.com/kawilkinson/gocade/games/tetris/tutils"
+	"github.com/kawilkinson/gocade/games/snake/sutils"
 )
 
 type Score struct {
 	Name  string
 	Score int
-	Lines int
-	Level int
-	Mode  string
 }
 
 func SaveScore(s Score, mode string) error {
-	var scoreFile string
-	switch mode {
-	case "Marathon":
-		scoreFile = tutils.MarathonScoreFile
-
-	case "Sprint":
-		scoreFile = tutils.SprintScoreFile
-
-	case "Ultra":
-		scoreFile = tutils.UltraScoreFile
-	}
+	scoreFile := sutils.SnakeScoreFile
 
 	file, err := os.OpenFile(scoreFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
@@ -41,9 +28,6 @@ func SaveScore(s Score, mode string) error {
 	record := []string{
 		s.Name,
 		strconv.Itoa(s.Score),
-		strconv.Itoa(s.Lines),
-		strconv.Itoa(s.Level),
-		s.Mode,
 	}
 
 	if err := writer.Write(record); err != nil {

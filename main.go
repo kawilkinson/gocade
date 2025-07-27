@@ -55,7 +55,7 @@ func runTetris() {
 }
 
 func runSnake() {
-	snakeModel := snake.CreateSnakeGameModel()
+	snakeModel := snake.NewModel()
 
 	snakeProgram := tea.NewProgram(snakeModel, tea.WithAltScreen())
 	if _, err := snakeProgram.Run(); err != nil {

@@ -1,17 +1,39 @@
 package snake
 
-type Model struct {
-	HorizontalLine string
-	VerticalLine   string
-	EmptySymbol    string
-	SnakeSymbol    string
-	FoodSymbol     string
-	Stage          [][]string
-	Snake          Snake
-	GameOver       bool
-	Score          int
-	Food           Food
+import (
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/kawilkinson/gocade/games/snake/snakeconfig"
+)
 
-	Width          int
-	Height         int
+type Model struct {
+	current tea.Model
+}
+
+func NewModel() Model {
+	return Model{
+		current: NewMenuModel(nil),
+	}
+}
+
+func (m Model) Init() tea.Cmd {
+	return m.current.Init()
+}
+
+func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch msg := msg.(type) {
+	case snakeconfig.SwitchToGameMsg:
+		game := CreateSnakeGameModel()
+		game.Username = msg.Username
+
+		return Model{current: game}, game.Init()
+	}
+
+	currModel, cmd := m.current.Update(msg)
+	m.current = currModel
+
+	return m, cmd
+}
+
+func (m Model) View() string {
+	return m.current.View()
 }

@@ -10,21 +10,21 @@ import (
 )
 
 func RenderStage(m *SnakeGameModel) {
-    m.Stage = make([][]string, 0, m.Height)
+	m.Stage = make([][]string, 0, m.Height)
 
-    // Top border
-    m.Stage = append(m.Stage,
-        strings.Split(m.VerticalLine+strings.Repeat(m.HorizontalLine, m.Width-2)+m.VerticalLine, ""))
+	// Top border
+	m.Stage = append(m.Stage,
+		strings.Split(m.VerticalLine+strings.Repeat(m.HorizontalLine, m.Width-2)+m.VerticalLine, ""))
 
-    // Middle rows
-    for i := 0; i < m.Height-2; i++ {
-        m.Stage = append(m.Stage,
-            strings.Split(m.VerticalLine+strings.Repeat(m.EmptySymbol, m.Width-2)+m.VerticalLine, ""))
-    }
+	// Middle rows
+	for i := 0; i < m.Height-2; i++ {
+		m.Stage = append(m.Stage,
+			strings.Split(m.VerticalLine+strings.Repeat(m.EmptySymbol, m.Width-2)+m.VerticalLine, ""))
+	}
 
-    // Bottom border
-    m.Stage = append(m.Stage,
-        strings.Split(m.VerticalLine+strings.Repeat(m.HorizontalLine, m.Width-2)+m.VerticalLine, ""))
+	// Bottom border
+	m.Stage = append(m.Stage,
+		strings.Split(m.VerticalLine+strings.Repeat(m.HorizontalLine, m.Width-2)+m.VerticalLine, ""))
 }
 
 func RenderSnake(m *SnakeGameModel) {
@@ -35,17 +35,6 @@ func RenderSnake(m *SnakeGameModel) {
 
 func RenderFood(m *SnakeGameModel) {
 	m.Stage[m.Food.x][m.Food.y] = m.FoodSymbol
-}
-
-func RenderTitle() string {
-	titleStyle := lipgloss.NewStyle().Bold(true).
-		Foreground(lipgloss.Color(utils.GopherColor)).
-		Width(40).
-		AlignHorizontal(lipgloss.Center).
-		MarginTop(1).
-		MarginBottom(1)
-
-	return titleStyle.Render("Snake")
 }
 
 func RenderScore(score int) string {
@@ -74,11 +63,22 @@ func RenderGameOver() string {
 	return gameOverStyle.Render(sutils.GameOverMessage)
 }
 
+func RenderTitle(username string) string {
+	titleStyle := lipgloss.NewStyle().Bold(true).
+		Foreground(lipgloss.Color(utils.GopherColor)).
+		Width(40).
+		AlignHorizontal(lipgloss.Center).
+		MarginTop(1).
+		MarginBottom(1)
+
+	return titleStyle.Render(username)
+}
+
 func (m *SnakeGameModel) RenderGame() string {
 	var strBuilder strings.Builder
 	var strStage strings.Builder
 
-	strBuilder.WriteString(RenderTitle())
+	strBuilder.WriteString(RenderTitle(m.Username))
 	strBuilder.WriteByte('\n')
 
 	RenderStage(m)

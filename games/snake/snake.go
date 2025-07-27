@@ -28,6 +28,11 @@ func (s *Snake) HitWall(m *SnakeGameModel) bool {
 	return false
 }
 
+// Extra check to prevent panics from going out of bounds, to be fixed later when I have time
+func ExtraHitWallCheck(m *SnakeGameModel, coord Coordinate) bool {
+	return coord.x >= m.Height || coord.y >= m.Width-1 || coord.x < 0 || coord.y < 0
+}
+
 func (s *Snake) HitSelf(coord Coordinate) bool {
 	for _, snakePart := range s.Body {
 		if snakePart.x == coord.x && snakePart.y == coord.y {
