@@ -43,7 +43,7 @@ This is the essentially the main menus for the app. This is where you'll be able
 Gocade currently has 2 games. These games include:
 
 #### Tetris
-This game would not have been possible to implement without massive credits to ![Tetrigo](https://github.com/Broderick-Westrope/tetrigo), his code helped a ton with the logic of the game and also teaching/showing me what a more large scale Bubble Tea app looks like! I made various edits to their game to make it fit with my arcade machine and to help me understand exactly how they made this game possible with Bubble Tea. Here's the game in action:
+This game would not have been possible to implement without massive credits to [Tetrigo](https://github.com/Broderick-Westrope/tetrigo), his code helped a ton with the logic of the game and also teaching/showing me what a more large scale Bubble Tea app looks like! I made various edits to their game to make it fit with my arcade machine and to help me understand exactly how they made this game possible with Bubble Tea. Here's the game in action:
 
 ![tetris demo](./docs/Gocade_Tetris.gif)
 
