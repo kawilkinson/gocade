@@ -13,16 +13,6 @@ import (
 	"github.com/kawilkinson/gocade/internal/utils"
 )
 
-const (
-	titleStr = `
-    ______________________  ______________ 
-   /_  __/ ____/_  __/ __ \/  _/ ____/ __ \
-    / / / __/   / / / /_/ // // / __/ / / /
-   / / / /___  / / / _, _// // /_/ / /_/ / 
-  /_/ /_____/ /_/ /_/ |_/___/\____/\____/  
-`
-)
-
 var _ tea.Model = &MenuModel{}
 
 type MenuModel struct {
@@ -88,7 +78,7 @@ func (m *MenuModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.width = msg.Width
 		m.height = msg.Height
 		formWidth := msg.Width / 2
-		formWidth = min(formWidth, lipgloss.Width(titleStr))
+		formWidth = min(formWidth, lipgloss.Width(tutils.RenderLargeText(tutils.TetrisTitle)))
 		m.form = m.form.WithWidth(formWidth)
 		return m, nil
 	}
@@ -124,7 +114,7 @@ func (m *MenuModel) announceCompletion() tea.Cmd {
 
 func (m *MenuModel) View() string {
 	output := lipgloss.JoinVertical(lipgloss.Center,
-		titleStr+"\n",
+		tutils.RenderLargeText(tutils.TetrisTitle)+"\n",
 		m.form.View(),
 	)
 	return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, output)

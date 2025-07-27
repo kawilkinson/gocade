@@ -20,27 +20,6 @@ import (
 	"github.com/kawilkinson/gocade/internal/utils"
 )
 
-const (
-	pausedMessage = `
-	____                            __
-   / __ \____ ___  __________  ____/ /
-  / /_/ / __ ^/ / / / ___/ _ \/ __  /
- / ____/ /_/ / /_/ (__  )  __/ /_/ /
-/_/    \__,_/\__,_/____/\___/\__,_/
-Press PAUSE to continue or HOLD to exit.
-`
-	gameOverMessage = `
-   ______                        ____                 
-  / ____/___ _____ ___  ___     / __ \_   _____  _____
- / / __/ __ ^/ __ ^__ \/ _ \   / / / / | / / _ \/ ___/
-/ /_/ / /_/ / / / / / /  __/  / /_/ /| |/ /  __/ /
-\____/\__,_/_/ /_/ /_/\___/   \____/ |___/\___/_/
-
-			Press EXIT or HOLD to continue.
-`
-	timerUpdateInterval = time.Millisecond * 13
-)
-
 var _ tea.Model = &SingleModel{}
 
 type SingleModel struct {
@@ -97,7 +76,7 @@ func NewSingleModel(
 
 			GhostEnabled: cfg.GhostEnabled,
 		}
-		m.gameStopwatch = tetrisconfig.NewStopwatchWithInterval(timerUpdateInterval)
+		m.gameStopwatch = tetrisconfig.NewStopwatchWithInterval(tutils.TimerUpdateInterval)
 
 	case tetrisconfig.ModeSprint:
 		gameIn = &single.Input{
@@ -110,14 +89,14 @@ func NewSingleModel(
 
 			GhostEnabled: cfg.GhostEnabled,
 		}
-		m.gameStopwatch = tetrisconfig.NewStopwatchWithInterval(timerUpdateInterval)
+		m.gameStopwatch = tetrisconfig.NewStopwatchWithInterval(tutils.TimerUpdateInterval)
 
 	case tetrisconfig.ModeUltra:
 		gameIn = &single.Input{
 			Level:        in.Level,
 			GhostEnabled: cfg.GhostEnabled,
 		}
-		m.gameTimer = tetrisconfig.NewTimerWithInterval(time.Minute*2, timerUpdateInterval)
+		m.gameTimer = tetrisconfig.NewTimerWithInterval(time.Minute*2, tutils.TimerUpdateInterval)
 
 	case tetrisconfig.ModeMenu, tetrisconfig.ModeLeaderboard:
 		fallthrough
@@ -365,12 +344,12 @@ func (m *SingleModel) View() string {
 	)
 
 	if m.game.IsGameOver() {
-		output, err = utils.OverlayCenter(output, gameOverMessage, true)
+		output, err = utils.OverlayCenter(output, tutils.RenderLargeText(tutils.GameOverMessage), true)
 		if err != nil {
 			return "** FAILED TO OVERLAY GAME OVER MESSAGE **"
 		}
 	} else if m.isPaused {
-		output, err = utils.OverlayCenter(output, pausedMessage, true)
+		output, err = utils.OverlayCenter(output, tutils.RenderLargeText(tutils.PausedMessage), true)
 		if err != nil {
 			return "** FAILED TO OVERLAY PAUSED MESSAGE **"
 		}
