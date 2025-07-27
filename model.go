@@ -208,7 +208,7 @@ func (m *MainMenuModels) View() string {
 		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, content)
 
 	case utils.ScreenMainMenu:
-		gopher := screens.RenderGopher(m.width, m.height, m.Style)
+		gopher := screens.RenderGopher(m.width, m.height, m.Style, utils.GopherMascot)
 		mainMenu := m.MainMenu.View()
 
 		content := lipgloss.JoinVertical(lipgloss.Center, gopher, mainMenu)
@@ -216,7 +216,7 @@ func (m *MainMenuModels) View() string {
 		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, content)
 
 	case utils.ScreenGameMenu:
-		gopher := screens.RenderGopher(m.width, m.height, m.Style)
+		gopher := screens.RenderGopher(m.width, m.height, m.Style, utils.GopherMascotSword)
 		gameMenu := m.GameMenu.View()
 
 		content := lipgloss.JoinVertical(lipgloss.Center, gopher, gameMenu)
@@ -224,7 +224,7 @@ func (m *MainMenuModels) View() string {
 		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, content)
 
 	case utils.ScreenScoreMenu:
-		gopher := screens.RenderGopher(m.width, m.height, m.Style)
+		gopher := screens.RenderGopher(m.width, m.height, m.Style, utils.GopherMascotSword)
 		scoreMenu := m.ScoreMenu.View()
 
 		content := lipgloss.JoinVertical(lipgloss.Center, gopher, scoreMenu)

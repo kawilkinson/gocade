@@ -1,6 +1,7 @@
 package screens
 
 import (
+	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/kawilkinson/gocade/internal/menuconfig"
 )
@@ -19,5 +20,16 @@ func NewMainMenu(width, height int, keys *menuconfig.MainMenuKeys, style *MenuSt
 	mainMenu.SetShowStatusBar(false)
 	mainMenu.SetFilteringEnabled(false)
 	mainMenu.Styles.Title = style.TitleStyle
+
+	mainMenu.AdditionalShortHelpKeys = keys.ShortHelp
+	mainMenu.AdditionalFullHelpKeys = func() []key.Binding {
+		var flattenedKeys []key.Binding
+		for _, row := range keys.FullHelp() {
+			flattenedKeys = append(flattenedKeys, row...)
+		}
+
+		return flattenedKeys
+	}
+
 	return mainMenu
 }

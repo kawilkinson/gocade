@@ -27,3 +27,8 @@ func CreateMenuStyle() *MenuStyles {
 
 	return &menuStyles
 }
+
+func RenderGopher(width, height int, style *MenuStyles, art string) string {
+	gopher := style.GopherStyle.Render(utils.NormalizeWidth(art))
+	return lipgloss.Place(width, lipgloss.Height(art), lipgloss.Center, lipgloss.Top, gopher)
+}
