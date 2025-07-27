@@ -30,6 +30,7 @@ type MainMenuModels struct {
 	height        int
 	SelectedGame  string
 	launchTetris  bool
+	launchSnake   bool
 	quitting      bool
 }
 
@@ -107,8 +108,10 @@ func (m *MainMenuModels) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.launchTetris = true
 					return m, tea.Quit
 
-				default: // quit out of the app for now when selecting other games
+				case "Snake":
+					m.launchSnake = true
 					return m, tea.Quit
+
 				}
 
 			case utils.ScreenScoreMenu:

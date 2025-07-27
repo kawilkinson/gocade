@@ -10,7 +10,6 @@ func NewGameMenu(width, height int, keys *menuconfig.MainMenuKeys, style *MenuSt
 	games := []list.Item{ // not final games, currently here as placeholders
 		MenuItem("Snake"),
 		MenuItem("Tetris"),
-		MenuItem("Pong"),
 	}
 
 	delegate := MenuDelegate{Styles: style}

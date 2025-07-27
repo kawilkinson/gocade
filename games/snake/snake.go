@@ -1,9 +1,9 @@
 package snake
 
 type Snake struct {
-	body      []Coordinate
-	length    int
-	direction int
+	Body      []Coordinate
+	Length    int
+	Direction int
 }
 
 type Coordinate struct {
@@ -14,12 +14,12 @@ type Food struct {
 	x, y int
 }
 
-func (s *Snake) getSnakeHead() Coordinate {
-	return s.body[len(s.body)-1]
+func (s *Snake) GetSnakeHead() Coordinate {
+	return s.Body[len(s.Body)-1]
 }
 
-func (s *Snake) hitWall(m *Model) bool {
-	head := s.getSnakeHead()
+func (s *Snake) HitWall(m *SnakeGameModel) bool {
+	head := s.GetSnakeHead()
 
 	if head.x >= m.Height || head.y >= m.Width-1 || head.x <= 0 || head.y <= 0 {
 		return true
@@ -28,8 +28,8 @@ func (s *Snake) hitWall(m *Model) bool {
 	return false
 }
 
-func (s *Snake) hitSelf(coord Coordinate) bool {
-	for _, snakePart := range s.body {
+func (s *Snake) HitSelf(coord Coordinate) bool {
+	for _, snakePart := range s.Body {
 		if snakePart.x == coord.x && snakePart.y == coord.y {
 			return true
 		}

@@ -5,32 +5,35 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
+	"github.com/kawilkinson/gocade/games/snake/sutils"
 	"github.com/kawilkinson/gocade/internal/utils"
 )
 
-func RenderStage(m *Model) {
-	m.Stage = append(m.Stage,
-		strings.Split(m.VerticalLine+strings.Repeat(m.HorizontalLine, m.Width-2)+m.VerticalLine,
-			""))
+func RenderStage(m *SnakeGameModel) {
+    m.Stage = make([][]string, 0, m.Height)
 
-	for i := 0; i < m.Height-1; i++ {
-		m.Stage = append(m.Stage,
-			strings.Split(m.VerticalLine+strings.Repeat(m.EmptySymbol, m.Width-2)+m.VerticalLine,
-				""))
-	}
+    // Top border
+    m.Stage = append(m.Stage,
+        strings.Split(m.VerticalLine+strings.Repeat(m.HorizontalLine, m.Width-2)+m.VerticalLine, ""))
 
-	m.Stage = append(m.Stage,
-		strings.Split(m.VerticalLine+strings.Repeat(m.HorizontalLine, m.Width-2)+m.VerticalLine,
-			""))
+    // Middle rows
+    for i := 0; i < m.Height-2; i++ {
+        m.Stage = append(m.Stage,
+            strings.Split(m.VerticalLine+strings.Repeat(m.EmptySymbol, m.Width-2)+m.VerticalLine, ""))
+    }
+
+    // Bottom border
+    m.Stage = append(m.Stage,
+        strings.Split(m.VerticalLine+strings.Repeat(m.HorizontalLine, m.Width-2)+m.VerticalLine, ""))
 }
 
-func RenderSnake(m *Model) {
-	for _, b := range m.Snake.body {
+func RenderSnake(m *SnakeGameModel) {
+	for _, b := range m.Snake.Body {
 		m.Stage[b.x][b.y] = m.SnakeSymbol
 	}
 }
 
-func RenderFood(m *Model) {
+func RenderFood(m *SnakeGameModel) {
 	m.Stage[m.Food.x][m.Food.y] = m.FoodSymbol
 }
 
@@ -68,5 +71,37 @@ func RenderGameOver() string {
 		MarginTop(1).
 		MarginBottom(1)
 
-	return gameOverStyle.Render("Game Over!")
+	return gameOverStyle.Render(sutils.GameOverMessage)
+}
+
+func (m *SnakeGameModel) RenderGame() string {
+	var strBuilder strings.Builder
+	var strStage strings.Builder
+
+	strBuilder.WriteString(RenderTitle())
+	strBuilder.WriteByte('\n')
+
+	RenderStage(m)
+	RenderSnake(m)
+	RenderFood(m)
+
+	for _, row := range m.Stage {
+		strStage.WriteString(strings.Join(row, "") + "\n")
+	}
+
+	strBuilder.WriteString(strStage.String())
+	strBuilder.WriteByte('\n')
+
+	strBuilder.WriteString(RenderScore(m.Score))
+	strBuilder.WriteByte('\n')
+
+	if m.GameOver {
+		strBuilder.WriteString(RenderGameOver())
+	}
+
+	strBuilder.WriteString(RenderHelp(sutils.HelpMessage))
+	strBuilder.WriteByte('\n')
+	strBuilder.WriteByte('\n')
+
+	return strBuilder.String()
 }
