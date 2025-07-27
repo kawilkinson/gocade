@@ -3,6 +3,8 @@ package leaderboard
 import (
 	"encoding/csv"
 	"os"
+	"sort"
+	"strconv"
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
@@ -110,6 +112,12 @@ func LoadScores(filename string) ([][]string, error) {
 }
 
 func createTetrisLeaderboardTable(scores [][]string) table.Model {
+	// sort scores by descending order
+	sort.Slice(scores, func(i, j int) bool {
+		scoreI, _ := strconv.Atoi(scores[i][1])
+		scoreJ, _ := strconv.Atoi(scores[j][1])
+		return scoreI > scoreJ
+	})
 	cols := []table.Column{
 		{Title: "Name", Width: 15},
 		{Title: "Score", Width: 10},
@@ -158,6 +166,13 @@ func createTetrisLeaderboardTable(scores [][]string) table.Model {
 }
 
 func createSnakeLeaderboardTable(scores [][]string) table.Model {
+	// sort scores by descending order
+	sort.Slice(scores, func(i, j int) bool {
+		scoreI, _ := strconv.Atoi(scores[i][1])
+		scoreJ, _ := strconv.Atoi(scores[j][1])
+		return scoreI > scoreJ
+	})
+
 	cols := []table.Column{
 		{Title: "Name", Width: 15},
 		{Title: "Score", Width: 10},
