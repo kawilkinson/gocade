@@ -1,8 +1,6 @@
 package screens
 
 import (
-	"strings"
-
 	"github.com/charmbracelet/lipgloss"
 	"github.com/kawilkinson/gocade/internal/utils"
 )
@@ -28,25 +26,4 @@ func CreateMenuStyle() *MenuStyles {
 	}
 
 	return &menuStyles
-}
-
-// helper function to ensure the art for the gopher is always aligned properly
-func NormalizeWidth(ascii string) string {
-	lines := strings.Split(ascii, "\n")
-	max := 0
-
-	for _, line := range lines {
-		if len([]rune(line)) > max {
-			max = len([]rune(line))
-		}
-	}
-
-	for i, line := range lines {
-		pad := max - len([]rune(line))
-		if pad > 0 {
-			lines[i] = line + strings.Repeat(" ", pad)
-		}
-	}
-	
-	return strings.Join(lines, "\n")
 }

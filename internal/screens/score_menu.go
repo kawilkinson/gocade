@@ -3,15 +3,15 @@ package screens
 import (
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
-	"github.com/kawilkinson/gocade/internal/utils"
+	"github.com/kawilkinson/gocade/internal/menuconfig"
 )
 
 // function currently is using the game menu logic as a placeholder
-func NewScoreMenu(width, height int, keys *utils.MainMenuKeys, style *MenuStyles) list.Model {
+func NewScoreMenu(width, height int, keys *menuconfig.MainMenuKeys, style *MenuStyles) list.Model {
 	games := []list.Item{
-		MenuItem("Snake"),
-		MenuItem("Tetris"),
-		MenuItem("Pong"),
+		MenuItem("Marathon Tetris"),
+		MenuItem("Sprint Tetris"),
+		MenuItem("Ultra Tetris"),
 	}
 
 	delegate := MenuDelegate{Styles: style}

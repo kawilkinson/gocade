@@ -1,22 +1,22 @@
-package tetrisscreens
+package tetrisconfig
 
 import (
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/huh"
 )
 
-type menuKeyMap struct {
+type MenuKeyMap struct {
 	Exit     key.Binding
-	formKeys *huh.KeyMap
+	FormKeys *huh.KeyMap
 }
 
-func SetTetrisMenuKeys() *menuKeyMap {
-	keys := &menuKeyMap{
+func SetTetrisMenuKeys() *MenuKeyMap {
+	keys := &MenuKeyMap{
 		Exit:     key.NewBinding(key.WithKeys("esc"), key.WithHelp("esc", "exit")),
-		formKeys: huh.NewDefaultKeyMap(),
+		FormKeys: huh.NewDefaultKeyMap(),
 	}
 
-	keys.formKeys.Quit.SetEnabled(false)
+	keys.FormKeys.Quit.SetEnabled(false)
 
 	return keys
 }

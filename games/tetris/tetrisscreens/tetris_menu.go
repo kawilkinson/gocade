@@ -18,7 +18,7 @@ var _ tea.Model = &MenuModel{}
 type MenuModel struct {
 	form                   *huh.Form
 	hasAnnouncedCompletion bool
-	keys                   *menuKeyMap
+	keys                   *tetrisconfig.MenuKeyMap
 	formData               *MenuFormData
 
 	width  int
@@ -33,7 +33,7 @@ type MenuFormData struct {
 
 func NewMenuModel(_ *tetrisconfig.MenuInput) *MenuModel {
 	formData := new(MenuFormData)
-	keys := SetTetrisMenuKeys()
+	keys := tetrisconfig.SetTetrisMenuKeys()
 
 	return &MenuModel{
 		formData: formData,
@@ -58,7 +58,7 @@ func NewMenuModel(_ *tetrisconfig.MenuInput) *MenuModel {
 					Title("Starting Level:").
 					Options(utils.HuhIntRangeOptions(1, 15)...),
 			),
-		).WithKeyMap(keys.formKeys),
+		).WithKeyMap(keys.FormKeys),
 		keys: keys,
 	}
 }

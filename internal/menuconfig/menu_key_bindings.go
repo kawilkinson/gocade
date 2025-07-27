@@ -1,4 +1,4 @@
-package utils
+package menuconfig
 
 import "github.com/charmbracelet/bubbles/key"
 

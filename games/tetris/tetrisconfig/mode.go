@@ -4,6 +4,8 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
+// credits to Tetrigo for providing modes: https://github.com/Broderick-Westrope/tetrigo
+
 type SwitchModeMsg struct {
 	Target Mode
 	Input  SwitchModeInput

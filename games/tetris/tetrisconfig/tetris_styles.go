@@ -2,6 +2,9 @@ package tetrisconfig
 
 import "github.com/charmbracelet/lipgloss"
 
+// TODO: adjust styling to add personal touch to this Tetris game (ideally the colors a bit more closer to the Go mascot), default styling
+// deserves credit to Tetrigo: https://github.com/Broderick-Westrope/tetrigo
+
 type Theme struct {
 	Colours struct {
 		TetriminoCells struct { // these are all the tetrimino piece types

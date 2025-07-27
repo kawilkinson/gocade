@@ -20,6 +20,9 @@ import (
 	"github.com/kawilkinson/gocade/internal/utils"
 )
 
+// Massive credits to Tetrigo for a lot of the Tetris bubble tea logic that simply wouldn't have been possible to do
+// over the span of a weekend, some personal adjustments have been made to the code: https://github.com/Broderick-Westrope/tetrigo
+
 var _ tea.Model = &SingleModel{}
 
 type SingleModel struct {
@@ -150,7 +153,7 @@ func (m *SingleModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, m.keys.Help):
 			m.help.ShowAll = !m.help.ShowAll
 			return m, tea.Batch(cmds...)
-		case key.Matches(msg, m.keys.ForceQuit):
+		case key.Matches(msg, m.keys.HardExit):
 			return m, tea.Quit
 		}
 
@@ -219,7 +222,7 @@ func (m *SingleModel) gameOverUpdate(msg tea.Msg) (*SingleModel, tea.Cmd) {
 				Mode:  modeStr,
 			}
 
-			_ = tetrisdata.SaveScore(newEntry)
+			_ = tetrisdata.SaveScore(newEntry, modeStr)
 
 			return m, tetrisconfig.SwitchModeCmd(tetrisconfig.ModeMenu, tetrisconfig.NewMenuInput())
 		}

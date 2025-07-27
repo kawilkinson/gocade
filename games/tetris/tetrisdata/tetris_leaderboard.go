@@ -4,10 +4,11 @@ import (
 	"encoding/csv"
 	"os"
 	"strconv"
+
+	"github.com/kawilkinson/gocade/games/tetris/tutils"
 )
 
 type Score struct {
-	ID    int
 	Name  string
 	Score int
 	Lines int
@@ -15,9 +16,19 @@ type Score struct {
 	Mode  string
 }
 
-const scoreFile = "../../internal/leaderboards/tetris_scores.csv"
+func SaveScore(s Score, mode string) error {
+	var scoreFile string
+	switch mode {
+	case "Marathon":
+		scoreFile = tutils.MarathonScoreFile
 
-func SaveScore(s Score) error {
+	case "Sprint":
+		scoreFile = tutils.SprintScoreFile
+
+	case "Ultra":
+		scoreFile = tutils.UltraScoreFile
+	}
+
 	file, err := os.OpenFile(scoreFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		return err
@@ -28,7 +39,6 @@ func SaveScore(s Score) error {
 	defer writer.Flush()
 
 	record := []string{
-		strconv.Itoa(s.ID),
 		s.Name,
 		strconv.Itoa(s.Score),
 		strconv.Itoa(s.Lines),
@@ -36,10 +46,30 @@ func SaveScore(s Score) error {
 		s.Mode,
 	}
 
-	return writer.Write(record)
+	if err := writer.Write(record); err != nil {
+		return err
+	}
+
+	if err := writer.Error(); err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func LoadScores() ([]Score, error) {
+func LoadScores(mode string) ([]Score, error) {
+	var scoreFile string
+	switch mode {
+	case "Marathon":
+		scoreFile = tutils.MarathonScoreFile
+
+	case "Sprint":
+		scoreFile = tutils.SprintScoreFile
+
+	case "Ultra":
+		scoreFile = tutils.UltraScoreFile
+	}
+
 	file, err := os.Open(scoreFile)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -62,12 +92,6 @@ func LoadScores() ([]Score, error) {
 			continue
 		}
 
-		var id int
-		id, err = strconv.Atoi(rec[0])
-		if err != nil {
-			id = 0
-		}
-
 		var score int
 		score, err = strconv.Atoi(rec[2])
 		if err != nil {
@@ -87,7 +111,6 @@ func LoadScores() ([]Score, error) {
 		}
 
 		scores = append(scores, Score{
-			ID:    id,
 			Name:  rec[1],
 			Score: score,
 			Lines: lines,

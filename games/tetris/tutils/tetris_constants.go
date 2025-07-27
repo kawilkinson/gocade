@@ -3,17 +3,17 @@ package tutils
 import (
 	"time"
 
-	"github.com/kawilkinson/gocade/internal/screens"
+	"github.com/kawilkinson/gocade/internal/utils"
 )
 
 type Screen int
 
 const (
-	ScreenTetrisMenu = Screen(iota)
-	ScreenTetrisGame
-	ScreenTetrisRoot
-
 	TimerUpdateInterval = time.Millisecond * 13
+
+	MarathonScoreFile = "internal/leaderboard/data/tetris_marathon_scores.csv"
+	SprintScoreFile = "internal/leaderboard/data/tetris_sprint_scores.csv"
+	UltraScoreFile = "internal/leaderboard/data/tetris_ultra_scores.csv"
 
 	// ASCII text for styling purposes
 	TetrisTitle = `
@@ -44,17 +44,8 @@ ______                        _
 	`
 )
 
-var ScreenToStrMap = map[Screen]string{
-	ScreenTetrisMenu: "Menu",
-	ScreenTetrisGame: "Tetris",
-}
-
-func (s Screen) String() string {
-	return ScreenToStrMap[s]
-}
-
 // helper function to ensure large ASCII text always shows correctly in Tetris
 func RenderLargeText(ascii string) string {
-	normalizedTitle := screens.NormalizeWidth(ascii)
+	normalizedTitle := utils.NormalizeWidth(ascii)
 	return normalizedTitle
 }
