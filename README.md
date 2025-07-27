@@ -8,7 +8,7 @@ It's built to be able to swap between the arcade machine, leaderboards, and game
 
 ## 🔔 Motivation
 
-This project was built over the course of a few days during the 2025 ![boot.dev](https://www.boot.dev/) hackathon! I tried to choose a project that is ambitious and would give me a ton to learn, and this project succeeded in allowing me to much more deeply understand Bubble Tea and how to make a TUI application with it! Getting more practice with Golang never hurts either.
+This project was built over the course of a few days during the 2025 [boot.dev](https://www.boot.dev/) hackathon! I tried to choose a project that is ambitious and would give me a ton to learn, and this project succeeded in allowing me to much more deeply understand Bubble Tea and how to make a TUI application with it! Getting more practice with Golang never hurts either.
 
 ## 🚀 Installation / Quick Start
 
@@ -75,8 +75,8 @@ Each leaderboard is sorted in descending order based on highest score.
 If you have any ideas for this project whether it'd be new features, optimizations, etc. feel free to share them. I'm always open to new ideas and improvements.
 
 ## Credits
-1. Credits to Gyga8K for their amazing Gopher ![image](https://forum.golangbridge.org/t/image-big-gopher/3489) that I was able to use in my arcade menus
+1. Credits to Gyga8K for their amazing Gopher [image](https://forum.golangbridge.org/t/image-big-gopher/3489) that I was able to use in my arcade menus
 
-2. Thank you ![Bubble Tea](https://github.com/charmbracelet/bubbletea) for being an awesome TUI framework!
+2. Thank you [Bubble Tea](https://github.com/charmbracelet/bubbletea) for being an awesome TUI framework!
 
-3. Finally, thank you ![Tetrigo](https://github.com/Broderick-Westrope/tetrigo) for inspiring me with ideas on how to handle making games with Bubble Tea
+3. Finally, thank you [Tetrigo](https://github.com/Broderick-Westrope/tetrigo) for inspiring me with ideas on how to handle making games with Bubble Tea
