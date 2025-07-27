@@ -1,0 +1,41 @@
+package main
+
+import (
+	"fmt"
+	"os"
+
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/kawilkinson/gocade/games/snake"
+	"github.com/kawilkinson/gocade/games/tetris"
+	"github.com/kawilkinson/gocade/games/tetris/tetrisconfig"
+)
+
+func runTetris() {
+	input := tetris.NewInput(
+		tetrisconfig.ModeMenu,
+		&tetrisconfig.MenuInput{},
+		tetrisconfig.CreateConfig(),
+	)
+
+	tetrisModel, err := tetris.NewModel(input)
+	if err != nil {
+		fmt.Printf("Error starting Tetris: %v\n", err)
+		os.Exit(1)
+	}
+
+	tetrisProgram := tea.NewProgram(tetrisModel, tea.WithAltScreen())
+	if _, err := tetrisProgram.Run(); err != nil {
+		fmt.Printf("Error running Tetris: %v\n", err)
+		os.Exit(1)
+	}
+}
+
+func runSnake() {
+	snakeModel := snake.NewModel()
+
+	snakeProgram := tea.NewProgram(snakeModel, tea.WithAltScreen())
+	if _, err := snakeProgram.Run(); err != nil {
+		fmt.Printf("Error running Snake: %v\n", err)
+		os.Exit(1)
+	}
+}
