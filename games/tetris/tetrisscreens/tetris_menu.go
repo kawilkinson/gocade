@@ -113,16 +113,25 @@ func (m *MenuModel) announceCompletion() tea.Cmd {
 }
 
 func (m *MenuModel) View() string {
-
 	title := tutils.RenderLargeText(tutils.TetrisTitle)
 	form := m.form.View()
+
+	helpText := lipgloss.NewStyle().
+	Foreground(lipgloss.Color("8")).
+	Render("Press 'esc' at any time in this menu to exit the game")
 	
-	containerStyle := lipgloss.NewStyle().
+	menuStyle := lipgloss.NewStyle().
 		Width(m.width).
 		Height(m.height).
 		Align(lipgloss.Center, lipgloss.Center)
 	
 	content := lipgloss.JoinVertical(lipgloss.Center, title, form)
+
+	mainContent := menuStyle.Render(content)
+	footer := lipgloss.NewStyle().
+	Width(m.width).
+	Align(lipgloss.Center).
+	Render(helpText)
 	
-	return containerStyle.Render(content)
+	return lipgloss.JoinVertical(lipgloss.Left, mainContent, footer)
 }

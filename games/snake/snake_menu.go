@@ -111,6 +111,10 @@ func (m *MenuModel) View() string {
 	title := sutils.RenderLargeText(sutils.SnakeTitle)
 	form := m.form.View()
 
+	helpText := lipgloss.NewStyle().
+	Foreground(lipgloss.Color("8")).
+	Render("Press 'esc' at any time in this menu to exit the game")
+
 	menuStyle := lipgloss.NewStyle().
 		Width(m.width).
 		Height(m.height).
@@ -118,5 +122,11 @@ func (m *MenuModel) View() string {
 
 	content := lipgloss.JoinVertical(lipgloss.Center, title, form)
 
-	return menuStyle.Render(content)
+	mainContent := menuStyle.Render(content)
+	footer := lipgloss.NewStyle().
+	Width(m.width).
+	Align(lipgloss.Center).
+	Render(helpText)
+
+	return lipgloss.JoinVertical(lipgloss.Left, mainContent, footer)
 }

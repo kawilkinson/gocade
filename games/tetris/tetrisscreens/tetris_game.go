@@ -347,7 +347,7 @@ func (m *SingleModel) View() string {
 	)
 
 	if m.game.IsGameOver() {
-		output, err = utils.OverlayCenter(output, tutils.RenderLargeText(tutils.GameOverMessage), true)
+		output, err = utils.OverlayCenter(output, tutils.GameOverMessage, true)
 		if err != nil {
 			return "** FAILED TO OVERLAY GAME OVER MESSAGE **"
 		}

@@ -12,7 +12,7 @@ type MenuKeyMap struct {
 
 func SetTetrisMenuKeys() *MenuKeyMap {
 	keys := &MenuKeyMap{
-		Exit:     key.NewBinding(key.WithKeys("esc"), key.WithHelp("esc", "exit")),
+		Exit:     key.NewBinding(key.WithKeys("esc"), key.WithHelp("esc", "exit game")),
 		FormKeys: huh.NewDefaultKeyMap(),
 	}
 
