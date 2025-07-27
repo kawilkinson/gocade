@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/progress"
 	tea "github.com/charmbracelet/bubbletea"
@@ -17,6 +18,7 @@ import (
 type MainMenuModels struct {
 	Screen        utils.Screen
 	Style         *screens.MenuStyles
+	Keys          *menuconfig.MainMenuKeys
 	MainMenu      list.Model
 	GameMenu      list.Model
 	ScoreMenu     list.Model
@@ -35,17 +37,15 @@ func CreateMainMenuModels() *MainMenuModels {
 	progressBar := progress.New(progress.WithGradient("#00ADD8", "#0082A8"), progress.WithWidth(40))
 	keys := menuconfig.SetExtraMainMenuKeys() // only additional since most of the defaults Bubble Tea has are good enough
 	style := screens.CreateMenuStyle()
-	// TODO: Make it so the file isn't loaded this early, should be loaded on the selection for the High Score menu
-	leaderboard := leaderboard.NewLeaderBoardMenu("internal/leaderboard/data/tetris_marathon_scores.csv")
 
 	return &MainMenuModels{
-		Screen:      utils.ScreenLoading,
-		Style:       style,
-		MainMenu:    screens.NewMainMenu(utils.MenuWidth, utils.MenuHeight, style),
-		GameMenu:    screens.NewGameMenu(utils.MenuWidth, utils.MenuHeight, keys, style),
-		ScoreMenu:   screens.NewScoreMenu(utils.MenuWidth, utils.MenuHeight, keys, style),
-		Leaderboard: leaderboard,
-		LoadingBar:  progressBar,
+		Screen:     utils.ScreenLoading,
+		Keys:       keys,
+		Style:      style,
+		MainMenu:   screens.NewMainMenu(utils.MenuWidth, utils.MenuHeight, keys, style),
+		GameMenu:   screens.NewGameMenu(utils.MenuWidth, utils.MenuHeight, keys, style),
+		ScoreMenu:  screens.NewScoreMenu(utils.MenuWidth, utils.MenuHeight, keys, style),
+		LoadingBar: progressBar,
 	}
 }
 
@@ -61,19 +61,24 @@ func (m *MainMenuModels) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.height = msg.Height
 
 	case tea.KeyMsg:
-		switch msg.String() {
-		case "q", "ctrl+c":
+		switch {
+		case key.Matches(msg, m.Keys.Exit):
 			m.quitting = true
 			return m, screens.ExitGocade()
 
-		case "b": // universal key for moving back to the main menu
+		case key.Matches(msg, m.Keys.BackKey): // universal key for moving back to the main menu
 			switch m.Screen {
+
+			case utils.ScreenLeaderboard:
+				m.Screen = utils.ScreenScoreMenu
+				return m, nil
+
 			case utils.ScreenGameMenu, utils.ScreenScoreMenu:
 				m.Screen = utils.ScreenMainMenu
 				return m, nil
 			}
 
-		case "enter":
+		case key.Matches(msg, m.Keys.Select):
 			switch m.Screen {
 
 			case utils.ScreenMainMenu:
@@ -109,18 +114,22 @@ func (m *MainMenuModels) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case utils.ScreenScoreMenu:
 				choice := m.ScoreMenu.SelectedItem().(screens.MenuItem)
 
+				var filename string
 				switch choice {
+
 				case "Marathon Tetris":
-					m.Screen = utils.ScreenLeaderboard
-					return m, nil
+					filename = "internal/leaderboard/data/tetris_marathon_scores.csv"
+
 				case "Sprint Tetris":
-					m.Screen = utils.ScreenLeaderboard
-					return m, nil
+					filename = "internal/leaderboard/data/tetris_sprint_scores.csv"
+
 				case "Ultra Tetris":
-					m.Screen = utils.ScreenLeaderboard
-					return m, nil
+					filename = "internal/leaderboard/data/tetris_ultra_scores.csv"
 				}
-				return m, tea.Quit
+
+				m.Leaderboard = leaderboard.NewLeaderBoardMenu(filename)
+				m.Screen = utils.ScreenLeaderboard
+				return m, nil
 			}
 		}
 
@@ -216,7 +225,7 @@ func (m *MainMenuModels) View() string {
 
 	case utils.ScreenScoreMenu:
 		gopher := screens.RenderGopher(m.width, m.height, m.Style)
-		scoreMenu := m.GameMenu.View()
+		scoreMenu := m.ScoreMenu.View()
 
 		content := lipgloss.JoinVertical(lipgloss.Center, gopher, scoreMenu)
 

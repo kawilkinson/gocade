@@ -2,9 +2,10 @@ package screens
 
 import (
 	"github.com/charmbracelet/bubbles/list"
+	"github.com/kawilkinson/gocade/internal/menuconfig"
 )
 
-func NewMainMenu(width, height int, style *MenuStyles) list.Model {
+func NewMainMenu(width, height int, keys *menuconfig.MainMenuKeys, style *MenuStyles) list.Model {
 	items := []list.Item{
 		MenuItem("Play Game"),
 		MenuItem("High Scores"),

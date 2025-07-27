@@ -17,7 +17,7 @@ func NewScoreMenu(width, height int, keys *menuconfig.MainMenuKeys, style *MenuS
 	delegate := MenuDelegate{Styles: style}
 
 	scoreMenu := list.New(games, delegate, width, height)
-	scoreMenu.Title = "Select a High Score list to view"
+	scoreMenu.Title = "Select a Leaderboard to view"
 	scoreMenu.SetShowStatusBar(false)
 	scoreMenu.SetFilteringEnabled(false)
 	scoreMenu.Styles.Title = style.TitleStyle

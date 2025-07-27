@@ -23,6 +23,7 @@ const (
 
 	// Colors for styling
 	GopherColor = "#00ADD8"
+	DarkerGopherColor = "#0082A8"
 
 	// Art for arcade machine
 	GopherMascot = `         

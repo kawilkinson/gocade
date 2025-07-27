@@ -20,7 +20,7 @@ func CreateMenuStyle() *MenuStyles {
 		SelectedItemStyle: lipgloss.NewStyle().PaddingLeft(2).Foreground(lipgloss.Color(utils.GopherColor)),
 		QuitTextStyle:     lipgloss.NewStyle().Bold(true),
 		GopherStyle: lipgloss.NewStyle().
-			Foreground(lipgloss.Color("#00ADD8")).
+			Foreground(lipgloss.Color(utils.GopherColor)).
 			Bold(true).Padding(1, 2).
 			Align(lipgloss.Center),
 	}
