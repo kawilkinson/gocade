@@ -1,5 +1,7 @@
 # Gocade
 
+![main demo](./docs/main_demo.gif)
+
 ## What is Gocade?
 
 Gocade is a TUI application built with Bubble Tea! The goal of this project was to build a fun virtual arcade machine that is modular and able to add new games with relative ease. The arcade machine allows you to play a variety of games in one place along with having leaderboards for each game and its game modes.
