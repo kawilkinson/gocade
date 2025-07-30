@@ -1,5 +1,7 @@
 # Gocade
 
+**This project was one of the winners of the Boot.dev 2025 Hackathon, check out the blog post [here](https://blog.boot.dev/news/hackathon-2025/) for details.**
+
 ![main demo](./docs/main_demo.gif)
 
 ## What is Gocade?
