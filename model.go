@@ -67,7 +67,7 @@ func (m *MainMenuModels) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.quitting = true
 			return m, screens.ExitGocade()
 
-		case key.Matches(msg, m.Keys.BackKey): // universal key for moving back to the main menu
+		case key.Matches(msg, m.Keys.BackKey):
 			switch m.Screen {
 
 			case utils.ScreenLeaderboard:
